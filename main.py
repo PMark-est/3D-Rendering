@@ -93,13 +93,11 @@ def cube():
     #   0------1
     vertices = [
         (-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1), # 0, 1, 2, 3
-        (-1, -1, -1), (1, -1, -1), (1, 1, -1), (-1, 1, -1) # 4, 5, 6, 7
+        (-1, 1, -1), (-1, -1, -1), (1, -1, -1), (1, 1, -1) # 4, 5, 6, 7
     ]
-    # Kolmnurgad, millest kuup koosneb. Avaldatatud kuupide tippudena vastupäeva järjekorras. Iga paar on kuubi üks tahk
+
     
-    ###
-    ### BUG ON SIIN (ARVAN SUURE TÕENAOSUSEGA)
-    ###
+    # Kolmnurgad, millest kuup koosneb. Avaldatatud kuupide tippudena vastupäeva järjekorras. Iga paar on kuubi üks tahk
     indices = [
         (0, 1, 2), (0, 2, 3),
         (1, 6, 7), (1, 7, 2),
