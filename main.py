@@ -6,52 +6,79 @@ import glm
 # Parema käe koordinaadistik
 WIN_SIZE = (1280, 720)
 BLACK = (0.0, 0.0, 0.0)
+# Kaamera parameetrid
 FOV = 50
 NEAR = 0.1
 FAR = 100
+SPEED = 10
+SENSITIVITY = 0.05
 
 pg.init()
+pg.event.set_grab(True)
+pg.mouse.set_visible(False)
 
 pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)
 pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 3)
-pg.display.gl_set_attribute(pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
+pg.display.gl_set_attribute(
+    pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
 
-pg.display.set_mode(WIN_SIZE, flags=pg.OPENGL|pg.DOUBLEBUF)
+pg.display.set_mode(WIN_SIZE, flags=pg.OPENGL | pg.DOUBLEBUF)
 ctx = mgl.create_context()
 clock = pg.time.Clock()
 # Kaamera
 aspect_ratio = WIN_SIZE[0]/WIN_SIZE[1]
 position = glm.vec3(2, 3, 3)
+# Defineerib, mis poole on ette, üles ja paremale
+right = glm.vec3(1, 0, 0)
 up = glm.vec3(0, 1, 0)
+forward = glm.vec3(0, 0, -1)
+# Kaamera keeramise muutujad
+yaw = -90
+pitch = 0
+# tagastab, kuhu vaatame maatrikskujul
 m_view = glm.lookAt(position, glm.vec3(0), up)
+# tagastab objektide projektsiooni maatrikskujul.
 m_proj = glm.perspective(glm.radians(FOV), aspect_ratio, NEAR, FAR)
 
+
 def check_events(scene):
+    move_camera()
     for event in pg.event.get():
         if event.type == pg.QUIT:
             destroy(scene)
             pg.quit()
             exit()
 
+
 def load_shader(shader_name):
     with open(f"shaders/{shader_name}.vert") as file:
         vertex_shader = file.read()
     with open(f"shaders/{shader_name}.frag") as file:
-        fragment_shader= file.read()
-    program = ctx.program(vertex_shader=vertex_shader, fragment_shader=fragment_shader)
+        fragment_shader = file.read()
+    program = ctx.program(vertex_shader=vertex_shader,
+                          fragment_shader=fragment_shader)
     return program
+
 
 def create(vertex_data):
     vbo = ctx.buffer(vertex_data)
     shader_program = load_shader('default')
+    m_model = glm.mat4()
     shader_program['m_proj'].write(m_proj)
     shader_program['m_view'].write(m_view)
+    shader_program['m_model'].write(m_model)
     vao = ctx.vertex_array(shader_program, [(vbo, '3f', 'in_position')])
-    return (vao, vbo, shader_program)
+    return (vao, vbo, shader_program, m_model)
+
 
 def render(scene):
     # vao.render()
     scene[0].render()
+    m_model = glm.rotate(scene[3], pg.time.get_ticks()
+                         * 0.001, glm.vec3(0, 1, 0))
+    scene[2]['m_model'].write(m_model)
+    scene[2]['m_view'].write(m_view)
+
 
 def destroy(scene):
     # Garbage collection. See on selleks, et mälust kustutatakse ära asjad, mida ei kasutata enam
@@ -62,7 +89,8 @@ def destroy(scene):
     # vao.release()
     scene[0].release()
 
-def triangle(k = 0):
+
+def triangle(k=0):
     # Defineerime tipud
     # Siis lastakse nad läbi shaderi, mis töötleb igat tippu
     # Luuakse jooned tippude asukohtade põhjal
@@ -73,14 +101,9 @@ def triangle(k = 0):
         (0.6, -0.8, 0.0),
         (-0.6, 0.8, 0.0)
     ]
-    if k==1:
-        vertices = [
-        (-0.6, -0.8, 0.0),
-        (-0.6, 0.8, 0.0),
-        (0.6, -0.8, 0.0)
-    ]
     vertex_data = np.array(vertices, dtype='f4')
     return create(vertex_data)
+
 
 def cube():
     #      4------7
@@ -92,11 +115,10 @@ def cube():
     #   |/     |/
     #   0------1
     vertices = [
-        (-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1), # 0, 1, 2, 3
-        (-1, 1, -1), (-1, -1, -1), (1, -1, -1), (1, 1, -1) # 4, 5, 6, 7
+        (-1, -1, 1), (1, -1, 1), (1, 1, 1), (-1, 1, 1),  # 0, 1, 2, 3
+        (-1, 1, -1), (-1, -1, -1), (1, -1, -1), (1, 1, -1)  # 4, 5, 6, 7
     ]
 
-    
     # Kolmnurgad, millest kuup koosneb. Avaldatatud kuupide tippudena vastupäeva järjekorras. Iga paar on kuubi üks tahk
     indices = [
         (0, 1, 2), (0, 2, 3),
@@ -111,9 +133,45 @@ def cube():
     return create(vertex_data)
 
 
+def move_camera():
+    global m_view, position
+    vel = SPEED * 0.016  # 0.016 on delta_time e. aeg, mis kulub ühe framei joonistamiseks
+    keys = pg.key.get_pressed()
+    if keys[pg.K_w]:
+        position += forward * vel
+    if keys[pg.K_a]:
+        position -= right * vel
+    if keys[pg.K_s]:
+        position -= forward * vel
+    if keys[pg.K_d]:
+        position += right * vel
+    if keys[pg.K_q]:
+        position += up * vel
+    if keys[pg.K_e]:
+        position -= up * vel
+    m_view = glm.lookAt(position, position + forward, up)
+
+
+"""def rotate_camera():
+    global yaw, pitch, forward, right, up
+    rel_x, rel_y = pg.mouse.get_rel()
+    yaw = rel_x * SENSITIVITY
+    pitch = rel_y * SENSITIVITY
+    pitch = max(-89, min(89, pitch))
+
+    yaw, pitch = glm.radians(yaw), glm.radians(pitch)
+    forward.x = glm.cos(yaw) * glm.cos(pitch)
+    forward.y = glm.sin(pitch)
+    forward.z = glm.sin(yaw) * glm.cos(pitch)
+
+    forward = glm.normalize(forward)
+    right = glm.normalize(glm.cross(forward, glm.vec3(0, 1, 0)))
+    up = glm.normalize(glm.cross(right, forward))"""
+
+
 def main():
     scene = cube()
-    while True:
+    while 1:
         check_events(scene)
         # Uuendab ekranni
         ctx.clear(color=BLACK)
@@ -121,5 +179,6 @@ def main():
         pg.display.flip()
         # FPS
         clock.tick(60)
+
 
 main()
