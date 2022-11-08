@@ -3,15 +3,26 @@ import pygame as pg
 import numpy as np
 import glm
 
+# Tausta värvid
+RED = 0.08 #0.32
+GREEN = 0.16 #0.34
+BLUE = 0.18 #0.48
+
 # Parema käe koordinaadistik
 WIN_SIZE = (1280, 720)
-BLACK = (0.0, 0.0, 0.0)
 # Kaamera parameetrid
 FOV = 50
 NEAR = 0.1
 FAR = 100
 SPEED = 10
 SENSITIVITY = 0.05
+
+# Valgus
+position_v = glm.vec3(2, 3, 3)
+color = glm.vec3(1, 1, 1)
+Ia = 0.1 * color # ambient
+Id = 0.8 * color # diffuse
+Is = 1.0 * color # specular
 
 pg.init()
 pg.event.set_grab(True)
@@ -24,6 +35,7 @@ pg.display.gl_set_attribute(
 
 pg.display.set_mode(WIN_SIZE, flags=pg.OPENGL | pg.DOUBLEBUF)
 ctx = mgl.create_context()
+ctx.enable(flags=mgl.DEPTH_TEST)
 clock = pg.time.Clock()
 # Kaamera
 aspect_ratio = WIN_SIZE[0]/WIN_SIZE[1]
@@ -64,10 +76,17 @@ def create(vertex_data):
     vbo = ctx.buffer(vertex_data)
     shader_program = load_shader('default')
     m_model = glm.mat4()
+
+    shader_program['light.position_v'].write(position_v)
+    shader_program['light.Ia'].write(Ia)
+    shader_program['light.Id'].write(Id)
+    shader_program['light.Is'].write(Is)
+
     shader_program['m_proj'].write(m_proj)
     shader_program['m_view'].write(m_view)
     shader_program['m_model'].write(m_model)
-    vao = ctx.vertex_array(shader_program, [(vbo, '3f', 'in_position')])
+    shader_program['camPos'].write(position)
+    vao = ctx.vertex_array(shader_program, [(vbo, '3f 3f', 'in_normal', 'in_position')])
     return (vao, vbo, shader_program, m_model)
 
 
@@ -128,8 +147,21 @@ def cube():
         (0, 6, 1), (0, 5, 6),
         (3, 2, 7), (3, 7, 4)
     ]
+
+    # Kuubi pinna normaalid, nagu tasanditel
+    normals = [
+        (0, 0, 1) * 6, 
+        (1, 0, 0) * 6, 
+        (0, 0, -1) * 6, 
+        (-1, 0, 0) * 6, 
+        (0, 1, 0) * 6, 
+        (0, -1, 0) * 6
+    ]
+    normals = np.array(normals, dtype='f4').reshape(36, 3)
+
     data = [vertices[ind] for triangle in indices for ind in triangle]
     vertex_data = np.array(data, dtype='f4')
+    vertex_data = np.hstack([normals, vertex_data])
     return create(vertex_data)
 
 
@@ -174,7 +206,7 @@ def main():
     while 1:
         check_events(scene)
         # Uuendab ekranni
-        ctx.clear(color=BLACK)
+        ctx.clear(color=(RED, GREEN, BLUE))
         render(scene)
         pg.display.flip()
         # FPS

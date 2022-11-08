@@ -2,7 +2,40 @@
 
 layout (location = 0) out vec4 fragColor;
 
+in vec3 normal;
+in vec3 fragPos;
+
+struct Light {
+    vec3 position_v;
+    vec3 Ia;
+    vec3 Id;
+    vec3 Is;
+};
+
+uniform Light light;
+uniform vec3 camPos;
+
+vec3 getLight(vec3 color) {
+    vec3 Normal = normalize(normal);
+// ambient light
+    vec3 ambient = light.Ia;
+
+// diffuse light
+    vec3 lightDir = normalize(light.position_v - fragPos);
+    float diff = max(0, dot(lightDir, Normal));
+    vec3 diffuse = diff * light.Id;
+
+// specular light
+    vec3 viewDir = normalize(camPos - fragPos);
+    vec3 reflectDir = reflect(-lightDir, Normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0), 70);
+    vec3 specular = spec * light.Is;
+
+    return color * (ambient + diffuse + specular);
+}
+
 void main(){
-    vec3 color = vec3(0, 0, 0.5);
+    vec3 color = vec3(1, 0, 0);
+    color = getLight(color);
     fragColor = vec4(color, 1.0);
 }
