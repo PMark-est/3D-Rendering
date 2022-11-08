@@ -12,20 +12,21 @@ struct Light {
     vec3 Is;
 };
 
-uniform Light light;
+uniform Light light; // esimene 'Light' tuleb eelnevast 
 uniform vec3 camPos;
 
-vec3 getLight(vec3 color) {
+vec3 getLight(vec3 color) {  // Valguse/varjude loomine
     vec3 Normal = normalize(normal);
-// ambient light
+
+// ambient light - üldine valgustugevus üle terve pildi, ei sõltu mingist punktist
     vec3 ambient = light.Ia;
 
-// diffuse light
+// diffuse light - hajuv valgus kindlast punktist (laelambist tulevad kiired peegeldvad ühtlaselt igas suunas)
     vec3 lightDir = normalize(light.position_v - fragPos);
     float diff = max(0, dot(lightDir, Normal));
     vec3 diffuse = diff * light.Id;
 
-// specular light
+// specular light - punktist peegelduv valgus kindla nurga alt (nagu peegel, kiired ei haju laiali vaid jäävad kindla nurga alla)
     vec3 viewDir = normalize(camPos - fragPos);
     vec3 reflectDir = reflect(-lightDir, Normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0), 70);
@@ -35,7 +36,7 @@ vec3 getLight(vec3 color) {
 }
 
 void main(){
-    vec3 color = vec3(1, 0, 0);
+    vec3 color = vec3(1, 0, 0); // Kuubi värv
     color = getLight(color);
     fragColor = vec4(color, 1.0);
 }

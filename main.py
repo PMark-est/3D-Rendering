@@ -11,22 +11,21 @@ BLUE = 0.18 #0.48
 # Parema käe koordinaadistik
 WIN_SIZE = (1280, 720)
 # Kaamera parameetrid
-FOV = 50
+FOV = 75
 NEAR = 0.1
 FAR = 100
 SPEED = 10
 SENSITIVITY = 0.05
 
 # Valgus
-position_v = glm.vec3(2, 3, 3)
+position_v = glm.vec3(-5, -5, -5) # Valguse "lambi" asukoht
 color = glm.vec3(1, 1, 1)
-Ia = 0.1 * color # ambient
-Id = 0.8 * color # diffuse
-Is = 1.0 * color # specular
+# Kordajad valguse peegeldumiseks, "intensiivsus"
+Ia = 0.1 * color # Üldine valgustugevus
+Id = 0.8 * color # Punktist tulnud valguse hajuvus pinnalt
+Is = 1.0 * color # Otsene peegeldus valgusel pinnalt
 
 pg.init()
-pg.event.set_grab(True)
-pg.mouse.set_visible(False)
 
 pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)
 pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 3)
@@ -34,12 +33,14 @@ pg.display.gl_set_attribute(
     pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
 
 pg.display.set_mode(WIN_SIZE, flags=pg.OPENGL | pg.DOUBLEBUF)
+pg.event.set_grab(True)
+pg.mouse.set_visible(False)
 ctx = mgl.create_context()
 ctx.enable(flags=mgl.DEPTH_TEST)
 clock = pg.time.Clock()
 # Kaamera
 aspect_ratio = WIN_SIZE[0]/WIN_SIZE[1]
-position = glm.vec3(2, 3, 3)
+position = glm.vec3(3, 1.5, 7) # Kaamera asukoht
 # Defineerib, mis poole on ette, üles ja paremale
 right = glm.vec3(1, 0, 0)
 up = glm.vec3(0, 1, 0)
@@ -48,14 +49,13 @@ forward = glm.vec3(0, 0, -1)
 yaw = -90
 pitch = 0
 # tagastab, kuhu vaatame maatrikskujul
-m_view = glm.lookAt(position, glm.vec3(0), up)
+m_view = glm.lookAt(position, glm.vec3(0, 0, 0), up)
 # tagastab objektide projektsiooni maatrikskujul.
 m_proj = glm.perspective(glm.radians(FOV), aspect_ratio, NEAR, FAR)
 
 
 def check_events(scene):
-    move_camera()
-    for event in pg.event.get():
+    for event in pg.event.get(): # kontrollib, kas on vajutatud akna sulgemis nuppu?
         if event.type == pg.QUIT:
             destroy(scene)
             pg.quit()
@@ -77,6 +77,7 @@ def create(vertex_data):
     shader_program = load_shader('default')
     m_model = glm.mat4()
 
+    # Valgusega seotud shaderid
     shader_program['light.position_v'].write(position_v)
     shader_program['light.Ia'].write(Ia)
     shader_program['light.Id'].write(Id)
@@ -101,12 +102,12 @@ def render(scene):
 
 def destroy(scene):
     # Garbage collection. See on selleks, et mälust kustutatakse ära asjad, mida ei kasutata enam
+    # vao.release()
+    scene[0].release()
     # vbo.release()
     scene[1].release()
     # shader_program.release()
     scene[2].release()
-    # vao.release()
-    scene[0].release()
 
 
 def triangle(k=0):
@@ -148,7 +149,7 @@ def cube():
         (3, 2, 7), (3, 7, 4)
     ]
 
-    # Kuubi pinna normaalid, nagu tasanditel
+    # Kuubi pinna normaalid, nagu tasandi normaalid KM tundides (risti tahuga)
     normals = [
         (0, 0, 1) * 6, 
         (1, 0, 0) * 6, 
@@ -181,24 +182,24 @@ def move_camera():
         position += up * vel
     if keys[pg.K_e]:
         position -= up * vel
-    m_view = glm.lookAt(position, position + forward, up)
 
 
-"""def rotate_camera():
-    global yaw, pitch, forward, right, up
+def rotate_camera():
+    global yaw, pitch, forward, right, up, m_view
     rel_x, rel_y = pg.mouse.get_rel()
-    yaw = rel_x * SENSITIVITY
-    pitch = rel_y * SENSITIVITY
+    yaw += rel_x * SENSITIVITY
+    pitch -= rel_y * SENSITIVITY
     pitch = max(-89, min(89, pitch))
 
-    yaw, pitch = glm.radians(yaw), glm.radians(pitch)
-    forward.x = glm.cos(yaw) * glm.cos(pitch)
-    forward.y = glm.sin(pitch)
-    forward.z = glm.sin(yaw) * glm.cos(pitch)
+    yaw2, pitch2 = glm.radians(yaw), glm.radians(pitch)
+    forward.x = glm.cos(yaw2) * glm.cos(pitch2)
+    forward.y = glm.sin(pitch2)
+    forward.z = glm.sin(yaw2) * glm.cos(pitch2)
 
     forward = glm.normalize(forward)
     right = glm.normalize(glm.cross(forward, glm.vec3(0, 1, 0)))
-    up = glm.normalize(glm.cross(right, forward))"""
+    up = glm.normalize(glm.cross(right, forward))
+    m_view = glm.lookAt(position, position + forward, up)
 
 
 def main():
@@ -206,6 +207,8 @@ def main():
     while 1:
         check_events(scene)
         # Uuendab ekranni
+        move_camera()
+        rotate_camera()
         ctx.clear(color=(RED, GREEN, BLUE))
         render(scene)
         pg.display.flip()
