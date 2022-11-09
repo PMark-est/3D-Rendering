@@ -29,7 +29,7 @@ vec3 getLight(vec3 color) {  // Valguse/varjude loomine
 // specular light - punktist peegelduv valgus kindla nurga alt (nagu peegel, kiired ei haju laiali vaid jäävad kindla nurga alla)
     vec3 viewDir = normalize(camPos - fragPos);
     vec3 reflectDir = reflect(-lightDir, Normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0), 70);
+    float spec = pow(max(dot(viewDir, reflectDir), 0), 32);
     vec3 specular = spec * light.Is;
 
     return color * (ambient + diffuse + specular);

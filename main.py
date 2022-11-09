@@ -1,15 +1,14 @@
+"""Liiguta saab nuppudega W, A, S, D, SPACE, LSHIFT ning rakenduse saab sulguda ESCAPE nupuga"""
 import moderngl as mgl
 import pygame as pg
 import numpy as np
 import glm
 
-# Tausta värvid
-RED = 0.08 #0.32
-GREEN = 0.16 #0.34
-BLUE = 0.18 #0.48
-
-# Parema käe koordinaadistik
 WIN_SIZE = (1280, 720)
+# Tausta värvid
+RED = 0.08  # 0.32
+GREEN = 0.16  # 0.34
+BLUE = 0.18  # 0.48
 # Kaamera parameetrid
 FOV = 75
 NEAR = 0.1
@@ -18,20 +17,18 @@ SPEED = 10
 SENSITIVITY = 0.05
 
 # Valgus
-position_v = glm.vec3(-5, -5, -5) # Valguse "lambi" asukoht
+position_v = glm.vec3(0, -3, 5)  # Valguse "lambi" asukoht
 color = glm.vec3(1, 1, 1)
 # Kordajad valguse peegeldumiseks, "intensiivsus"
-Ia = 0.1 * color # Üldine valgustugevus
-Id = 0.8 * color # Punktist tulnud valguse hajuvus pinnalt
-Is = 1.0 * color # Otsene peegeldus valgusel pinnalt
-
+Ia = 0.1 * color  # Üldine valgustugevus
+Id = 0.8 * color  # Punktist tulnud valguse hajuvus pinnalt
+Is = 1.0 * color  # Otsene peegeldus valgusel pinnalt
+# Pygame'i initsialiseerimine koos openGL-iga
 pg.init()
-
 pg.display.gl_set_attribute(pg.GL_CONTEXT_MAJOR_VERSION, 3)
 pg.display.gl_set_attribute(pg.GL_CONTEXT_MINOR_VERSION, 3)
 pg.display.gl_set_attribute(
     pg.GL_CONTEXT_PROFILE_MASK, pg.GL_CONTEXT_PROFILE_CORE)
-
 pg.display.set_mode(WIN_SIZE, flags=pg.OPENGL | pg.DOUBLEBUF)
 pg.event.set_grab(True)
 pg.mouse.set_visible(False)
@@ -40,7 +37,8 @@ ctx.enable(flags=mgl.DEPTH_TEST)
 clock = pg.time.Clock()
 # Kaamera
 aspect_ratio = WIN_SIZE[0]/WIN_SIZE[1]
-position = glm.vec3(3, 1.5, 7) # Kaamera asukoht
+# Kaamera algne asukoht (PAREM/VASAK,ÜLES/ALLA, ETTE/TAHA)
+position = glm.vec3(0, 0, 5)
 # Defineerib, mis poole on ette, üles ja paremale
 right = glm.vec3(1, 0, 0)
 up = glm.vec3(0, 1, 0)
@@ -55,14 +53,23 @@ m_proj = glm.perspective(glm.radians(FOV), aspect_ratio, NEAR, FAR)
 
 
 def check_events(scene):
-    for event in pg.event.get(): # kontrollib, kas on vajutatud akna sulgemis nuppu?
+    move_camera()
+    rotate_camera()
+    for event in pg.event.get():
+        # Kontrollib sulgemist
         if event.type == pg.QUIT:
             destroy(scene)
             pg.quit()
             exit()
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_ESCAPE:
+                destroy(scene)
+                pg.quit()
+                exit()
 
 
 def load_shader(shader_name):
+    """Loeb shaders kaustast vastavalt tippude ja värvi varjutajad"""
     with open(f"shaders/{shader_name}.vert") as file:
         vertex_shader = file.read()
     with open(f"shaders/{shader_name}.frag") as file:
@@ -73,6 +80,7 @@ def load_shader(shader_name):
 
 
 def create(vertex_data):
+    """Loob objekti"""
     vbo = ctx.buffer(vertex_data)
     shader_program = load_shader('default')
     m_model = glm.mat4()
@@ -87,35 +95,35 @@ def create(vertex_data):
     shader_program['m_view'].write(m_view)
     shader_program['m_model'].write(m_model)
     shader_program['camPos'].write(position)
-    vao = ctx.vertex_array(shader_program, [(vbo, '3f 3f', 'in_normal', 'in_position')])
+    vao = ctx.vertex_array(
+        shader_program, [(vbo, '3f 3f', 'in_normal', 'in_position')])
     return (vao, vbo, shader_program, m_model)
 
 
 def render(scene):
-    # vao.render()
-    scene[0].render()
-    m_model = glm.rotate(scene[3], pg.time.get_ticks()
-                         * 0.001, glm.vec3(0, 1, 0))
-    scene[2]['m_model'].write(m_model)
-    scene[2]['m_view'].write(m_view)
+    """Paneb objekti ekraanile"""
+    for scene in programs.values():
+        # vao.render()
+        scene[0].render()
+        m_model = glm.rotate(scene[3], pg.time.get_ticks()
+                             * 0.001, glm.vec3(0, 1, 0))
+        scene[2]['m_model'].write(m_model)
+        scene[2]['m_view'].write(m_view)
 
 
 def destroy(scene):
-    # Garbage collection. See on selleks, et mälust kustutatakse ära asjad, mida ei kasutata enam
-    # vao.release()
-    scene[0].release()
-    # vbo.release()
-    scene[1].release()
-    # shader_program.release()
-    scene[2].release()
+    """Garbage collection. See on selleks, et mälust kustutatakse ära asjad, mida ei kasutata enam"""
+    for scene in programs.values():
+        # vao.release()
+        scene[0].release()
+        # vbo.release()
+        scene[1].release()
+        # shader_program.release()
+        scene[2].release()
+    programs.clear()
 
 
 def triangle(k=0):
-    # Defineerime tipud
-    # Siis lastakse nad läbi shaderi, mis töötleb igat tippu
-    # Luuakse jooned tippude asukohtade põhjal
-    # Rasteratsioon
-    # Värvi shader
     vertices = [
         (-0.6, -0.8, 0.0),
         (0.6, -0.8, 0.0),
@@ -151,11 +159,11 @@ def cube():
 
     # Kuubi pinna normaalid, nagu tasandi normaalid KM tundides (risti tahuga)
     normals = [
-        (0, 0, 1) * 6, 
-        (1, 0, 0) * 6, 
-        (0, 0, -1) * 6, 
-        (-1, 0, 0) * 6, 
-        (0, 1, 0) * 6, 
+        (0, 0, 1) * 6,
+        (1, 0, 0) * 6,
+        (0, 0, -1) * 6,
+        (-1, 0, 0) * 6,
+        (0, 1, 0) * 6,
         (0, -1, 0) * 6
     ]
     normals = np.array(normals, dtype='f4').reshape(36, 3)
@@ -167,6 +175,8 @@ def cube():
 
 
 def move_camera():
+    """Laseb kaameral liikuda üles, alla, paremale, vasakule, edasi ja tagasi.
+    Vastavad nupud on W, S, D, A, SPACE ja LSHIFT"""
     global m_view, position
     vel = SPEED * 0.016  # 0.016 on delta_time e. aeg, mis kulub ühe framei joonistamiseks
     keys = pg.key.get_pressed()
@@ -178,13 +188,14 @@ def move_camera():
         position -= forward * vel
     if keys[pg.K_d]:
         position += right * vel
-    if keys[pg.K_q]:
+    if keys[pg.K_SPACE]:
         position += up * vel
-    if keys[pg.K_e]:
+    if keys[pg.K_LSHIFT]:
         position -= up * vel
 
 
 def rotate_camera():
+    """Laseb kaamerat hiirega liikutada"""
     global yaw, pitch, forward, right, up, m_view
     rel_x, rel_y = pg.mouse.get_rel()
     yaw += rel_x * SENSITIVITY
@@ -207,8 +218,6 @@ def main():
     while 1:
         check_events(scene)
         # Uuendab ekranni
-        move_camera()
-        rotate_camera()
         ctx.clear(color=(RED, GREEN, BLUE))
         render(scene)
         pg.display.flip()
