@@ -102,25 +102,22 @@ def create(vertex_data):
 
 def render(scene):
     """Paneb objekti ekraanile"""
-    for scene in programs.values():
-        # vao.render()
-        scene[0].render()
-        m_model = glm.rotate(scene[3], pg.time.get_ticks()
-                             * 0.001, glm.vec3(0, 1, 0))
-        scene[2]['m_model'].write(m_model)
-        scene[2]['m_view'].write(m_view)
+    # vao.render()
+    scene[0].render()
+    m_model = glm.rotate(scene[3], pg.time.get_ticks()
+                         * 0.001, glm.vec3(0, 1, 0))
+    scene[2]['m_model'].write(m_model)
+    scene[2]['m_view'].write(m_view)
 
 
 def destroy(scene):
     """Garbage collection. See on selleks, et mälust kustutatakse ära asjad, mida ei kasutata enam"""
-    for scene in programs.values():
-        # vao.release()
-        scene[0].release()
-        # vbo.release()
-        scene[1].release()
-        # shader_program.release()
-        scene[2].release()
-    programs.clear()
+    # vao.release()
+    scene[0].release()
+    # vbo.release()
+    scene[1].release()
+    # shader_program.release()
+    scene[2].release()
 
 
 def triangle(k=0):
