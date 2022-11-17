@@ -40,8 +40,11 @@ def create_vaos(vaos, vbo, shader_program):
     return vaos
 
 
-def cube(vaos, shader_program, pos):
-    return vaos['cube'], cube_model(shader_program, pos), glm.translate(glm.mat4(), pos)
+def cube(vaos, shader_program, pos, size=(1, 1, 1)):
+    m_model = glm.mat4()
+    m_model = glm.translate(m_model, pos)
+    m_model = glm.scale(m_model, size)
+    return vaos['cube'], cube_model(shader_program, pos, size), m_model
 
 
 def cube_vbo():
@@ -78,8 +81,8 @@ def cube_vbo():
         (1, 0, 0) * 6,
         (0, 0, -1) * 6,
         (-1, 0, 0) * 6,
-        (0, 1, 0) * 6,
-        (0, -1, 0) * 6
+        (0, -1, 0) * 6,
+        (0, 1, 0) * 6
     ]
     normals = np.array(normals, dtype='f4').reshape(36, 3)
 
@@ -89,13 +92,14 @@ def cube_vbo():
     return get_vbo(vertex_data), _format, _attribs
 
 
-def cube_model(shader_program, pos):
+def cube_model(shader_program, pos, size):
     shader_program['light.position_v'].write(position_v)
     shader_program['light.Ia'].write(Ia)
     shader_program['light.Id'].write(Id)
     shader_program['light.Is'].write(Is)
 
     m_model = glm.translate(glm.mat4(), pos)
+    m_model = glm.scale(m_model, size)
     shader_program['m_proj'].write(m_proj)
     shader_program['m_view'].write(m_view)
     shader_program['m_model'].write(m_model)
@@ -116,9 +120,13 @@ def main():
     vbos = create_vbos(vbos)
     vaos = create_vaos(vaos, vbos['cube'], shader_programs['default'])
 
-    objects.append(cube(vaos, shader_programs['default'], (0, 0, -5)))
+    objects.append(
+        cube(vaos, shader_programs['default'], (0, -3, -5), (10, 1, 10)))
     objects.append(cube(vaos, shader_programs['default'], (3, 0, -5)))
     objects.append(cube(vaos, shader_programs['default'], (-3, 0, -5)))
+    # VALGUSE KAST
+    objects.append(
+        cube(vaos, shader_programs['default'], (VALGUS_X, VALGUS_Y, VALGUS_Z), (0.1, 0.1, 0.1)))
     while 1:
         check_events(vaos, vbos, shader_programs)
         # Uuendab ekranni

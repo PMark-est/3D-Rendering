@@ -14,8 +14,10 @@ FAR = 100
 SPEED = 10
 SENSITIVITY = 0.05
 
+VALGUS_X, VALGUS_Y, VALGUS_Z = 0, 2, -5
+
 # Valgus
-position_v = glm.vec3(0, -3, 5)  # Valguse "lambi" asukoht
+position_v = glm.vec3(VALGUS_X, VALGUS_Y, VALGUS_Z)  # Valguse "lambi" asukoht
 color = glm.vec3(1, 1, 1)
 
 
