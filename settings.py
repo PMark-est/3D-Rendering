@@ -14,7 +14,7 @@ FAR = 100
 SPEED = 10
 SENSITIVITY = 0.05
 
-VALGUS_X, VALGUS_Y, VALGUS_Z = 0, 2, -5
+VALGUS_X, VALGUS_Y, VALGUS_Z = 10, 10, 10
 
 # Valgus
 position_v = glm.vec3(VALGUS_X, VALGUS_Y, VALGUS_Z)  # Valguse "lambi" asukoht
@@ -54,5 +54,19 @@ yaw = -90
 pitch = 0
 # tagastab, kuhu vaatame maatrikskujul
 m_view = glm.lookAt(position, glm.vec3(0, 0, 0), up)
+# tagastab varjude loomiseks vajaliku vaatepunkti
+m_view_light = glm.lookAt(position_v, glm.vec3(0, 0, 0), up)
 # tagastab objektide projektsiooni maatrikskujul.
 m_proj = glm.perspective(glm.radians(FOV), aspect_ratio, NEAR, FAR)
+
+
+
+
+# Varjude tekstuurid
+textures = {}
+textures['depth_texture'] = ctx.depth_texture(WIN_SIZE)
+textures['depth_texture'].repeat_x = False
+textures['depth_texture'].repeat_y = False
+
+depth_texture = textures['depth_texture']
+depth_fbo = ctx.framebuffer(depth_attachment=depth_texture)

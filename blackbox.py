@@ -23,17 +23,25 @@ def get_vbo(vertex_data):
 
 
 def get_vao(shader_program, vbo):
-    return ctx.vertex_array(shader_program, [(vbo[0], vbo[1], *vbo[2])])
+    return ctx.vertex_array(shader_program, [(vbo[0], vbo[1], *vbo[2])], skip_errors=True)
 
 
 def render_scene(objects):
     """Paneb objekti ekraanile"""
+    ctx.screen.use()
     for obj in objects:
         obj[0].render()
         obj[1]["m_model"].write(obj[2])
         obj[1]["m_view"].write(m_view)
         obj[1]["camPos"].write(position)
 
+def render_shadow(objects):
+    """Teeb kindlaks, milline pind on eespool ja milline tagapool ehk loob aluse varjude tegemiseks"""
+    depth_fbo.clear()
+    depth_fbo.use()
+    for obj in objects:                     ## Usun, et viga on siin, kuid ei tea kindlalt
+        obj[1]['m_model'].write(obj[2])
+        obj[0].render()
 
 def destroy(vaos, vbos, shader_programs):
     """Garbage collection. See on selleks, et mälust kustutatakse ära asjad, mida ei kasutata enam"""
@@ -43,6 +51,8 @@ def destroy(vaos, vbos, shader_programs):
         vbo[0].release
     for shader in shader_programs.values():
         shader.release()
+    depth_fbo.release()
+
 
 
 def move_camera():

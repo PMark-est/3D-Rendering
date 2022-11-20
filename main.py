@@ -27,6 +27,7 @@ def check_events(vaos, vbos, shader_programs):
 
 def shaders(shader_programs):
     shader_programs['default'] = load_shader('default')
+    shader_programs['shadow_map'] = load_shader('shadow_map')
     return shader_programs
 
 
@@ -36,7 +37,8 @@ def create_vbos(vbos):
 
 
 def create_vaos(vaos, vbo, shader_program):
-    vaos['cube'] = get_vao(shader_program, vbo)
+    vaos['cube'] = get_vao(shader_program['default'], vbo)
+    vaos['shadow_cube'] = get_vao(shader_program['shadow_map'], vbo)
     return vaos
 
 
@@ -44,7 +46,7 @@ def cube(vaos, shader_program, pos, size=(1, 1, 1)):
     m_model = glm.mat4()
     m_model = glm.translate(m_model, pos)
     m_model = glm.scale(m_model, size)
-    return vaos['cube'], cube_model(shader_program, pos, size), m_model
+    return vaos['cube'], cube_model(shader_program, pos, size, vaos), m_model
 
 
 def cube_vbo():
@@ -92,14 +94,28 @@ def cube_vbo():
     return get_vbo(vertex_data), _format, _attribs
 
 
-def cube_model(shader_program, pos, size):
+def cube_model(shader_program, pos, size, vaos):
+    m_model = glm.translate(glm.mat4(), pos)
+    m_model = glm.scale(m_model, size)
+
+
+    depth_texture = textures['depth_texture']
+    shader_program['shadowMap'] = 1
+    depth_texture.use(location=1)
+
+    shadow_vao = vaos['shadow_cube'] #luues erinevaid uusi objekte, peaks selle argumendi muudetavaks tegema ('shadow_' + vao nimi)
+    shadow_shader_program = shadow_vao.program
+    shadow_shader_program['m_proj'].write(m_proj)
+    shadow_shader_program['m_view_light'].write(m_view_light)
+    shadow_shader_program['m_model'].write(m_model)
+
+    shader_program['m_view_light'].write(m_view_light)
+
     shader_program['light.position_v'].write(position_v)
     shader_program['light.Ia'].write(Ia)
     shader_program['light.Id'].write(Id)
     shader_program['light.Is'].write(Is)
 
-    m_model = glm.translate(glm.mat4(), pos)
-    m_model = glm.scale(m_model, size)
     shader_program['m_proj'].write(m_proj)
     shader_program['m_view'].write(m_view)
     shader_program['m_model'].write(m_model)
@@ -118,10 +134,10 @@ def main():
 
     shader_programs = shaders(shader_programs)
     vbos = create_vbos(vbos)
-    vaos = create_vaos(vaos, vbos['cube'], shader_programs['default'])
+    vaos = create_vaos(vaos, vbos['cube'], shader_programs)
 
     objects.append(
-        cube(vaos, shader_programs['default'], (0, -3, -5), (10, 1, 10)))
+        cube(vaos, shader_programs['default'], (0, -3, -5), (10, 0.1, 10)))
     objects.append(cube(vaos, shader_programs['default'], (3, 0, -5)))
     objects.append(cube(vaos, shader_programs['default'], (-3, 0, -5)))
     # VALGUSE KAST
@@ -131,6 +147,9 @@ def main():
         check_events(vaos, vbos, shader_programs)
         # Uuendab ekranni
         ctx.clear(color=(RED, GREEN, BLUE))
+        # ennem varjud
+        render_shadow(objects)
+        # siis põhipilt
         render_scene(objects)
         pg.display.flip()
         # FPS
