@@ -31,17 +31,17 @@ def render_scene(objects):
     ctx.screen.use()
     for obj in objects:
         obj[0].render()
-        obj[1]["m_model"].write(obj[2])
-        obj[1]["m_view"].write(m_view)
-        obj[1]["camPos"].write(position)
+        obj[1][0]["m_model"].write(obj[2])
+        obj[1][0]["m_view"].write(m_view)
+        obj[1][0]["camPos"].write(position)
 
 def render_shadow(objects):
     """Teeb kindlaks, milline pind on eespool ja milline tagapool ehk loob aluse varjude tegemiseks"""
     depth_fbo.clear()
     depth_fbo.use()
-    for obj in objects:                     ## Usun, et viga on siin, kuid ei tea kindlalt
-        obj[1]['m_model'].write(obj[2])
-        obj[0].render()
+    for obj in objects:
+        obj[1][1]['m_model'].write(obj[2])
+        obj[1][2].render()                   # renderdab "shadow_vao"
 
 def destroy(vaos, vbos, shader_programs):
     """Garbage collection. See on selleks, et mälust kustutatakse ära asjad, mida ei kasutata enam"""

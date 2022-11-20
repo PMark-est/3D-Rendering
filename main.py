@@ -98,6 +98,7 @@ def cube_model(shader_program, pos, size, vaos):
     m_model = glm.translate(glm.mat4(), pos)
     m_model = glm.scale(m_model, size)
 
+    shader_program['u_resolution'].write(glm.vec2(WIN_SIZE))
 
     depth_texture = textures['depth_texture']
     shader_program['shadowMap'] = 1
@@ -109,6 +110,7 @@ def cube_model(shader_program, pos, size, vaos):
     shadow_shader_program['m_view_light'].write(m_view_light)
     shadow_shader_program['m_model'].write(m_model)
 
+    shader_program['kuubi_color'].write(kuubi_värv)
     shader_program['m_view_light'].write(m_view_light)
 
     shader_program['light.position_v'].write(position_v)
@@ -119,7 +121,7 @@ def cube_model(shader_program, pos, size, vaos):
     shader_program['m_proj'].write(m_proj)
     shader_program['m_view'].write(m_view)
     shader_program['m_model'].write(m_model)
-    return shader_program
+    return [shader_program, shadow_shader_program, shadow_vao]
 
 
 def create_model():
@@ -140,7 +142,7 @@ def main():
         cube(vaos, shader_programs['default'], (0, -3, -5), (10, 0.1, 10)))
     objects.append(cube(vaos, shader_programs['default'], (3, 0, -5)))
     objects.append(cube(vaos, shader_programs['default'], (-3, 0, -5)))
-    # VALGUSE KAST
+    # VALGUSE KAST (kasutatav ainult "CULL_FACE" flag-iga, mis ei renderda kaste seestpoolt(vt settings.py rida 40))
     objects.append(
         cube(vaos, shader_programs['default'], (VALGUS_X, VALGUS_Y, VALGUS_Z), (0.1, 0.1, 0.1)))
     while 1:

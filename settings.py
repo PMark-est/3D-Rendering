@@ -7,6 +7,13 @@ WIN_SIZE = (1280, 720)
 RED = 0.08  # 0.32
 GREEN = 0.16  # 0.34
 BLUE = 0.18  # 0.48
+
+# Kuubi värvid
+KUUBI_RED = 1
+KUUBI_GREEN = 0
+KUUBI_BLUE = 0
+kuubi_värv = glm.vec3(KUUBI_RED, KUUBI_GREEN, KUUBI_BLUE)
+
 # Kaamera parameetrid
 FOV = 75
 NEAR = 0.1
@@ -14,10 +21,10 @@ FAR = 100
 SPEED = 10
 SENSITIVITY = 0.05
 
-VALGUS_X, VALGUS_Y, VALGUS_Z = 10, 10, 10
-
+# Valguse asukoht
+VALGUS_X, VALGUS_Y, VALGUS_Z = 20, 20, 20
 # Valgus
-position_v = glm.vec3(VALGUS_X, VALGUS_Y, VALGUS_Z)  # Valguse "lambi" asukoht
+position_v = glm.vec3(VALGUS_X, VALGUS_Y, VALGUS_Z)
 color = glm.vec3(1, 1, 1)
 
 
@@ -37,7 +44,7 @@ pg.display.set_mode(WIN_SIZE, flags=pg.OPENGL | pg.DOUBLEBUF)
 pg.event.set_grab(True)
 pg.mouse.set_visible(False)
 ctx = mgl.create_context()
-ctx.enable(flags=mgl.DEPTH_TEST)
+ctx.enable(flags=mgl.DEPTH_TEST | mgl.CULL_FACE)
 clock = pg.time.Clock()
 
 
