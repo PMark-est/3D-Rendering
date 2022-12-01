@@ -16,13 +16,9 @@ def check_events(vaos, vbos, shader_programs):
         # Kontrollib sulgemist
         if event.type == pg.QUIT:
             destroy(vaos, vbos, shader_programs)
-            pg.quit()
-            exit()
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
-                destroy(vaos, vbos, shader_programs)
-                pg.quit()
-                exit()
+                pause(vaos, vbos, shader_programs)
 
 
 def shaders(shader_programs):
@@ -42,16 +38,16 @@ def create_vaos(vaos, vbo, shader_program):
     return vaos
 
 
-def cube(vaos, shader_program, pos, size=(1, 1, 1)):
+def cube(vaos, shader_program, pos, texture, size=(1, 1, 1)):
     m_model = glm.mat4()
     m_model = glm.translate(m_model, pos)
     m_model = glm.scale(m_model, size)
-    return vaos['cube'], cube_model(shader_program, pos, size, vaos), m_model
+    return vaos['cube'], cube_model(shader_program, pos, size, vaos, texture), m_model
 
 
 def cube_vbo():
-    _format = "3f 3f"
-    _attribs = ["in_normal", "in_position"]
+    _format = "2f 3f 3f"
+    _attribs = ["in_texcoord_0", "in_normal", "in_position"]
     #      4------7
     #     /|     /|
     #    / |    / |
@@ -88,15 +84,32 @@ def cube_vbo():
     ]
     normals = np.array(normals, dtype='f4').reshape(36, 3)
 
-    data = get_data(vertices, indices)
-    vertex_data = np.array(data, dtype='f4')
+    # Tekstuuri pinna jaoks vajalikud kolmnurgad
+    tex_coord = [(0, 0), (1, 0), (1, 1), (0, 1)]
+    tex_coord_indices = [
+        (0, 1, 2), (0, 2, 3), 
+        (0, 1, 2), (0, 2, 3), 
+        (0, 1, 2), (0, 2, 3), 
+        
+        (0, 1, 2), (0, 2, 3), 
+        (2, 0, 1), (2, 3, 0), 
+        (3, 0, 1), (3, 1, 2)
+        ]
+    
+    vertex_data = get_data(vertices, indices)
     vertex_data = np.hstack([normals, vertex_data])
+
+    tex_coord_data = get_data(tex_coord, tex_coord_indices)
+    vertex_data = np.hstack([tex_coord_data, vertex_data])
+
     return get_vbo(vertex_data), _format, _attribs
 
 
-def cube_model(shader_program, pos, size, vaos):
+def cube_model(shader_program, pos, size, vaos, texture):
     m_model = glm.translate(glm.mat4(), pos)
     m_model = glm.scale(m_model, size)
+    
+    shader_program['u_texture_0'] = 0
 
     shader_program['u_resolution'].write(glm.vec2(WIN_SIZE))
 
@@ -110,7 +123,7 @@ def cube_model(shader_program, pos, size, vaos):
     shadow_shader_program['m_view_light'].write(m_view_light)
     shadow_shader_program['m_model'].write(m_model)
 
-    shader_program['kuubi_color'].write(kuubi_värv)
+    #shader_program['kuubi_color'].write(kuubi_värv)
     shader_program['m_view_light'].write(m_view_light)
 
     shader_program['light.position_v'].write(position_v)
@@ -121,10 +134,45 @@ def cube_model(shader_program, pos, size, vaos):
     shader_program['m_proj'].write(m_proj)
     shader_program['m_view'].write(m_view)
     shader_program['m_model'].write(m_model)
-    return [shader_program, shadow_shader_program, shadow_vao]
+    return [shader_program, shadow_shader_program, shadow_vao, texture]
+
 
 
 def create_model():
+    return
+
+def pause(vaos, vbos, shader_programs):
+    objects_pause = []  # eraldi järjend, kuhu tekitatakse kast vastava küljepildiga
+    objects_pause.append(cube(vaos, shader_programs['default'], (0, 0, 0), texture['paus_pilt'], (9, 0.1, 16)))
+
+
+    pg.event.set_grab(False) # toob hiire nähtavale ja laseb vabaks
+    pg.mouse.set_visible(True)
+
+
+    while 1:
+        pg.mouse.get_rel() #on selleks, et pärast ei jamaks see hiire asukoha muutusega kui paus kinni panna, funktsioon ise ei kasuta seda
+        rotate_camera_pause() # funktsioon kaamera vaate alla suunamiseks
+        # siin ei ole funktsiooni kaamera liigutamiseks, kuna seda ei tohi siin liigutada
+
+        ctx.clear(color=(RED, GREEN, BLUE))
+        render_shadow(objects_pause)
+        render_scene(objects_pause) # renderdab eraldi järjendis oleva(d) objekti(d)
+        pg.display.flip()
+        
+        for event in pg.event.get():
+        # Kontrollib nupu vajutusi
+            if event.type == pg.QUIT:
+                destroy(vaos, vbos, shader_programs) # ristist saab kinni panna akna hetkel
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE: # esc nupuga viib tagasi põhivaatesse hetkel
+                    objects_pause.clear() #tühjendab järjendi, et järgmine kord ei teki probleeme uuesti sama järjendi koostamisel (vist on ebavajalik, kui funktsiooni alguses teeb uue puhta järjendi?)
+                    pg.event.set_grab(True) # tõmbab uuesti hiire kasti kinni
+                    pg.mouse.set_visible(False)
+                    return
+        clock.tick(60)
+        
+        
     return
 
 
@@ -139,12 +187,12 @@ def main():
     vaos = create_vaos(vaos, vbos['cube'], shader_programs)
 
     objects.append(
-        cube(vaos, shader_programs['default'], (0, -3, -5), (10, 0.1, 10)))
-    objects.append(cube(vaos, shader_programs['default'], (3, 0, -5)))
-    objects.append(cube(vaos, shader_programs['default'], (-3, 0, -5)))
-    # VALGUSE KAST (kasutatav ainult "CULL_FACE" flag-iga, mis ei renderda kaste seestpoolt(vt settings.py rida 40))
+        cube(vaos, shader_programs['default'], (0, -3, -5), texture['green'], (10, 0.1, 10)))
+    objects.append(cube(vaos, shader_programs['default'], (3, 0, -5), texture['blue']))
+    objects.append(cube(vaos, shader_programs['default'], (-3, 0, -5), texture['red']))
+    # VALGUSE KAST (kasutatav ainult "CULL_FACE" flag-iga, mis ei renderda kaste seestpoolt)
     objects.append(
-        cube(vaos, shader_programs['default'], (VALGUS_X, VALGUS_Y, VALGUS_Z), (0.1, 0.1, 0.1)))
+        cube(vaos, shader_programs['default'], (VALGUS_X, VALGUS_Y, VALGUS_Z), texture['white'], (0.1, 0.1, 0.1)))
     while 1:
         check_events(vaos, vbos, shader_programs)
         # Uuendab ekranni

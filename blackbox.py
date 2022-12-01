@@ -1,5 +1,7 @@
 from settings import *
+from colors import *
 import pygame as pg
+import numpy as np
 import glm
 
 
@@ -15,7 +17,8 @@ def load_shader(shader_name):
 
 
 def get_data(vertices, indices):
-    return [vertices[ind] for triangle in indices for ind in triangle]
+    data = [vertices[ind] for triangle in indices for ind in triangle]
+    return np.array(data, dtype='f4')
 
 
 def get_vbo(vertex_data):
@@ -34,6 +37,7 @@ def render_scene(objects):
         obj[1][0]["m_model"].write(obj[2])
         obj[1][0]["m_view"].write(m_view)
         obj[1][0]["camPos"].write(position)
+        obj[1][3].use(location=0) # renderdab iga objekti jaoks oma tekstuuri/värvi
 
 def render_shadow(objects):
     """Teeb kindlaks, milline pind on eespool ja milline tagapool ehk loob aluse varjude tegemiseks"""
@@ -52,6 +56,8 @@ def destroy(vaos, vbos, shader_programs):
     for shader in shader_programs.values():
         shader.release()
     depth_fbo.release()
+    pg.quit()
+    exit()
 
 
 
@@ -92,3 +98,15 @@ def rotate_camera():
     right = glm.normalize(glm.cross(forward, glm.vec3(0, 1, 0)))
     up = glm.normalize(glm.cross(right, forward))
     m_view = glm.lookAt(position, position + forward, up)
+
+def rotate_camera_pause():
+    """Suunab kaamera kindlasse punkti, et teostada paus-menüü"""
+    global yaw, pitch, forward, right, up, m_view
+    forward.x = -0.017452405765652657
+    forward.y = -0.9998477101325989
+    forward.z = -2.436815520923119e-06
+
+    forward = glm.normalize(forward)
+    right = glm.normalize(glm.cross(forward, glm.vec3(0, 1, 0)))
+    up = glm.normalize(glm.cross(right, forward))
+    m_view = glm.lookAt(glm.vec3(0, 11, 0), glm.vec3(0, 11, 0) + forward, up)
