@@ -19,7 +19,6 @@ uniform vec3 camPos;
 uniform sampler2D u_texture_0;
 uniform sampler2DShadow shadowMap;
 uniform vec2 u_resolution;
- // uniform vec3 kuubi_color;
 
 float lookup(float ox, float oy) {
     vec2 pixelOffset = 1 / u_resolution;

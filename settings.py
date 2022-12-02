@@ -4,15 +4,10 @@ import glm
 
 WIN_SIZE = (1280, 720)
 # Tausta värvid
-RED = 0.08  # 0.32
-GREEN = 0.16  # 0.34
-BLUE = 0.18  # 0.48
+RED = 0.32 # 0.08
+GREEN = 0.34 # 0.16
+BLUE = 0.48 # 0.18
 
-# Kuubi värvid
-KUUBI_RED = 1
-KUUBI_GREEN = 0
-KUUBI_BLUE = 0
-kuubi_värv = glm.vec3(KUUBI_RED, KUUBI_GREEN, KUUBI_BLUE)
 
 # Kaamera parameetrid
 FOV = 75

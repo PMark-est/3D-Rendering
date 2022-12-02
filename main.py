@@ -123,7 +123,6 @@ def cube_model(shader_program, pos, size, vaos, texture):
     shadow_shader_program['m_view_light'].write(m_view_light)
     shadow_shader_program['m_model'].write(m_model)
 
-    #shader_program['kuubi_color'].write(kuubi_värv)
     shader_program['m_view_light'].write(m_view_light)
 
     shader_program['light.position_v'].write(position_v)
@@ -143,7 +142,7 @@ def create_model():
 
 def pause(vaos, vbos, shader_programs):
     objects_pause = []  # eraldi järjend, kuhu tekitatakse kast vastava küljepildiga
-    objects_pause.append(cube(vaos, shader_programs['default'], (0, 0, 0), texture['paus_pilt'], (9, 0.1, 16)))
+    objects_pause.append(cube(vaos, shader_programs['default'], (0, 0, 0), texture('textures/paus_pilt.jpg'), (9, 0.1, 16))) # Tekstuuri faili teekond
 
 
     pg.event.set_grab(False) # toob hiire nähtavale ja laseb vabaks
@@ -187,12 +186,12 @@ def main():
     vaos = create_vaos(vaos, vbos['cube'], shader_programs)
 
     objects.append(
-        cube(vaos, shader_programs['default'], (0, -3, -5), texture['green'], (10, 0.1, 10)))
-    objects.append(cube(vaos, shader_programs['default'], (3, 0, -5), texture['blue']))
-    objects.append(cube(vaos, shader_programs['default'], (-3, 0, -5), texture['red']))
+        cube(vaos, shader_programs['default'], (0, -3, -5), texture((50, 255, 200)), (10, 0.1, 10))) # RGB väärtused kasti värvi jaoks(0-255)
+    objects.append(cube(vaos, shader_programs['default'], (3, 0, -5), texture((255, 0, 0))))        # Ära unusta sellest teha "tuple"!
+    objects.append(cube(vaos, shader_programs['default'], (-3, 0, -5), texture((0, 0, 0))))
     # VALGUSE KAST (kasutatav ainult "CULL_FACE" flag-iga, mis ei renderda kaste seestpoolt)
     objects.append(
-        cube(vaos, shader_programs['default'], (VALGUS_X, VALGUS_Y, VALGUS_Z), texture['white'], (0.1, 0.1, 0.1)))
+        cube(vaos, shader_programs['default'], (VALGUS_X, VALGUS_Y, VALGUS_Z), texture((255, 255, 255)), (0.1, 0.1, 0.1)))
     while 1:
         check_events(vaos, vbos, shader_programs)
         # Uuendab ekranni

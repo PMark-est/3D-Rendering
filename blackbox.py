@@ -100,9 +100,9 @@ def rotate_camera():
     m_view = glm.lookAt(position, position + forward, up)
 
 def rotate_camera_pause():
-    """Suunab kaamera kindlasse punkti, et teostada paus-menüü"""
+    """Suunab kaamera kindlasse punkti, et teostada paus-menüü. Põhimõtteliselt sama funktsioon, mis eelnev, aga muutujad on ette antud"""
     global yaw, pitch, forward, right, up, m_view
-    forward.x = -0.017452405765652657
+    forward.x = -0.017452405765652657  # Need arvud on võetud kaamera alla keeramisega ja sealt 'forward' muutujate väärtuste võtmisega, ei ole "täpsed" alla suuna väärtused
     forward.y = -0.9998477101325989
     forward.z = -2.436815520923119e-06
 
