@@ -7,6 +7,8 @@ from blackbox import *
 import pygame as pg
 import numpy as np
 import glm
+import os
+import sys
 
 
 def check_events(vaos, vbos, shader_programs):
@@ -19,6 +21,31 @@ def check_events(vaos, vbos, shader_programs):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 pause(vaos, vbos, shader_programs)
+
+def check_events_pause(vaos, vbos, shader_programs):
+    for event in pg.event.get():
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == pg.BUTTON_LEFT:
+            x, y = pg.mouse.get_pos()  # Hangib hiire koordinaadid kliki ajal
+            if x in range(414, 865):  # Kui hiir klikiti antud koordinaatide vahemikus (ehk peaaegu täpselt kastide sees)
+
+                if y in range(94, 199): # "Sulge rakendus" nupp
+                    destroy(vaos, vbos, shader_programs)
+
+                elif y in range(314, 420): # "Alusta uuesti" nupp
+                    sys.stdout.flush()
+                    os.execl(sys.executable, 'python', __file__, *sys.argv[1:]) # Sulgeb hetkel käiva rakenduse ja avab uuesti, teeb "restardi"
+
+                elif y in range(540, 648): # "Tagasi" nupp
+                    end_pause()
+                    return True
+
+        # Kontrollib muid tegevusi
+        if event.type == pg.QUIT: # Kui aken on ristist suletud
+            destroy(vaos, vbos, shader_programs)
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_ESCAPE: # Kui esc nuppu vajutatud, viib ka tagasi nagu "Tagasi" nupp ekraanil
+                end_pause()
+                return True
 
 
 def shaders(shader_programs):
@@ -141,16 +168,22 @@ def create_model():
     return
 
 def pause(vaos, vbos, shader_programs):
+    global objects_pause
     objects_pause = []  # eraldi järjend, kuhu tekitatakse kast vastava küljepildiga
     objects_pause.append(cube(vaos, shader_programs['default'], (0, 0, 0), texture('textures/paus_pilt.jpg'), (9, 0.1, 16))) # Tekstuuri faili teekond
 
-
     pg.event.set_grab(False) # toob hiire nähtavale ja laseb vabaks
     pg.mouse.set_visible(True)
+    pg.mouse.set_pos(WIN_SIZE[0] / 2, WIN_SIZE[1] / 2) # liigubtab hiire ekraani keskele, et oleks ilusam
+
+    for obj in objects_pause:
+        obj[1][0]['light.Ia'].write(0.8 * glm.vec3(1, 1, 1)) # See eemaldab kõik valguse peegeldumised ning jätab alles puhta RGB valguse
+        obj[1][0]['light.Id'].write(0 * glm.vec3(1, 1, 1))
+        obj[1][0]['light.Is'].write(0 * glm.vec3(1, 1, 1))
 
 
     while 1:
-        pg.mouse.get_rel() #on selleks, et pärast ei jamaks see hiire asukoha muutusega kui paus kinni panna, funktsioon ise ei kasuta seda
+        pg.mouse.get_rel() # on selleks, et pärast ei jamaks see hiire asukoha muutusega kui paus kinni panna, funktsioon ise ei kasuta seda
         rotate_camera_pause() # funktsioon kaamera vaate alla suunamiseks
         # siin ei ole funktsiooni kaamera liigutamiseks, kuna seda ei tohi siin liigutada
 
@@ -159,19 +192,22 @@ def pause(vaos, vbos, shader_programs):
         render_scene(objects_pause) # renderdab eraldi järjendis oleva(d) objekti(d)
         pg.display.flip()
         
-        for event in pg.event.get():
-        # Kontrollib nupu vajutusi
-            if event.type == pg.QUIT:
-                destroy(vaos, vbos, shader_programs) # ristist saab kinni panna akna hetkel
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE: # esc nupuga viib tagasi põhivaatesse hetkel
-                    objects_pause.clear() #tühjendab järjendi, et järgmine kord ei teki probleeme uuesti sama järjendi koostamisel (vist on ebavajalik, kui funktsiooni alguses teeb uue puhta järjendi?)
-                    pg.event.set_grab(True) # tõmbab uuesti hiire kasti kinni
-                    pg.mouse.set_visible(False)
-                    return
+        if check_events_pause(vaos, vbos, shader_programs): # kui antud frunktsioon tagastab True
+            return
+
         clock.tick(60)
         
         
+    return
+
+def end_pause(): # Funktsioon, mis paneb "paus" ekraani kinni ja viib tagasi põhivaatesse
+    global objects_pause, Ia, Id, Is
+    for obj in objects_pause:
+        obj[1][0]['light.Ia'].write(Ia) # Viib valgus tasemed tagasi algseisu
+        obj[1][0]['light.Id'].write(Id)
+        obj[1][0]['light.Is'].write(Is)
+    pg.event.set_grab(True)
+    pg.mouse.set_visible(False) # peidab hiire
     return
 
 
