@@ -4,16 +4,16 @@ import glm
 
 WIN_SIZE = (1280, 720)
 # Tausta värvid
-RED = 0.32 # 0.08
-GREEN = 0.34 # 0.16
-BLUE = 0.48 # 0.18
+RED = 0.32  # 0.08
+GREEN = 0.34  # 0.16
+BLUE = 0.48  # 0.18
 
 
 # Kaamera parameetrid
 FOV = 75
 NEAR = 0.1
 FAR = 100
-SPEED = 10
+SPEED = 7
 SENSITIVITY = 0.05
 
 # Valguse asukoht
@@ -52,7 +52,7 @@ right = glm.vec3(1, 0, 0)
 up = glm.vec3(0, 1, 0)
 forward = glm.vec3(0, 0, -1)
 # Kaamera keeramise muutujad
-yaw = -90
+yaw = 0
 pitch = 0
 # tagastab, kuhu vaatame maatrikskujul
 m_view = glm.lookAt(position, glm.vec3(0, 0, 0), up)
@@ -60,8 +60,6 @@ m_view = glm.lookAt(position, glm.vec3(0, 0, 0), up)
 m_view_light = glm.lookAt(position_v, glm.vec3(0, 0, 0), up)
 # tagastab objektide projektsiooni maatrikskujul.
 m_proj = glm.perspective(glm.radians(FOV), aspect_ratio, NEAR, FAR)
-
-
 
 
 # Varjude tekstuurid
