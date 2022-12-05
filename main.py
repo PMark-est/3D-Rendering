@@ -9,6 +9,9 @@ import numpy as np
 import glm
 import os
 import sys
+import tkinter as tk
+from tkinter import ttk
+from tkinter import colorchooser
 
 
 def check_events(vaos, vbos, shader_programs):
@@ -21,6 +24,14 @@ def check_events(vaos, vbos, shader_programs):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 pause(vaos, vbos, shader_programs)
+            if event.key == pg.K_f:
+                pg.event.set_grab(False)  # toob hiire nähtavale ja laseb vabaks
+                pg.mouse.set_visible(True)
+                pg.mouse.set_pos(WIN_SIZE[0] / 2, WIN_SIZE[1] / 2)
+                create_models_gui()
+                pg.mouse.get_rel()
+                pg.event.set_grab(True)  # vastupidi
+                pg.mouse.set_visible(False)
 
 
 def check_events_pause(vaos, vbos, shader_programs):
@@ -232,7 +243,169 @@ def create_models(vaos, shader, *objects):
     return objs
 
 
+def create_models_gui():
+    """Esimene ekraan mis tuleb ette kui vajutad f tähte"""
+    global window
+
+    # Tkinteri initsialiseerimine
+    window = tk.Tk()
+    window.title("Muuda stseeni")
+    window.resizable(width=False, height=False)
+    window.geometry("300x300")
+
+    # Raamid, mille sisse tulevad elemendid
+    frame_a = tk.Frame(master=window)
+    frame_b = tk.Frame(master=window)
+
+    # Tekst
+    label = tk.Label(
+        master=frame_a,
+        text="Vali tegevus", 
+        font=10, 
+        width=25, height=10
+    )
+
+    # Nupud
+    button1 = tk.Button(
+        master=frame_b, 
+        text="Lisa objekte",
+        width=25,
+        command = add_stuff
+    )
+
+    button2 = tk.Button(
+        master=frame_b, 
+        text="Muuda objekte",
+        width=25,
+        command = change_stuff
+    )
+
+    button3 = tk.Button(
+        master=frame_b, 
+        text="Eemalda objekte",
+        width=25,
+        command = remove_stuff
+    )
+    
+    # Teeb kõik elemendid kuvatavaks vist
+    label.pack()
+    frame_a.pack()
+
+    button1.pack()
+    button2.pack()
+    button3.pack()
+    frame_b.pack()
+
+    # Põhitsükkel tööle, ehk kuvab tekitatud akna
+    window.mainloop()
+
+    
+def add_stuff():
+    """Teine ekraan mis tuleb ette kui vajutad esimesel nuppu "Lisa objekte" """
+    global window2, color, objects, vaos, shader_programs, x, y, z
+    
+    # Uus aken uue muutuja nimega
+    window2 = tk.Toplevel()
+    window2.title("Lisa objekte")
+    window2.resizable(width=False, height=False)
+    window2.geometry("300x300")
+
+    # Raamid
+    frame_c = tk.Frame(master=window2, width=30)
+    frame_d = tk.Frame(master=window2, width=30)
+    frame_e = tk.Frame(master=window2, width=30)
+    frame_f = tk.Frame(master=window2, width=30)
+    frame_g = tk.Frame(master=window2, width=30)
+    
+    # Tekst
+    label_info = tk.Label(master=frame_g, text="Sisesta koordinaadid")
+
+    # Sisestuskastid
+    x = tk.StringVar()
+    label_x = tk.Label(master=frame_c, text="X")
+    x_entry = ttk.Entry(master=frame_c, textvariable=x)
+    x_entry.focus()
+
+    y = tk.StringVar()
+    label_y = tk.Label(master=frame_d, text="Y")
+    y_entry = ttk.Entry(master=frame_d, textvariable=y)
+    
+    z = tk.StringVar()
+    label_z = tk.Label(master=frame_e, text="Z")
+    z_entry = ttk.Entry(master=frame_e, textvariable=z)
+
+    # Nupp
+    button = tk.Button(master=frame_f, text="Edasi värvi valima", command=color_chooser)
+
+    # Kõik elemendid kuvatavaks vist
+    button.pack()
+    label_info.pack()
+
+    label_x.pack()
+    x_entry.pack()
+
+    label_y.pack()
+    y_entry.pack()
+
+    label_z.pack()
+    z_entry.pack()
+
+
+    frame_g.pack()
+    frame_c.pack()
+    frame_d.pack()
+    frame_e.pack()
+    frame_f.pack()
+
+    # Akna põhitsükkel
+    window2.mainloop()
+
+
+
+def color_chooser():
+    """Kui eelmisel ekraanil sai koordinaadid sisestatud ja nuppu vajutatud"""
+    global window2, window, color, x, y, z
+    
+    # Windowsi basic color picker
+    color = colorchooser.askcolor(title="Vali värv")
+
+    # Teeb eelnevalt kasti sisestatud koordinaadid arvudeks
+    try:
+        x = int(x.get())
+        y = int(y.get())
+        z = int(z.get())
+    except:
+        raise Exception("Sisestatud koordinaadid ei ole arvud")
+    
+    # Lisab need objektide nimekirja
+    object = create_models(vaos, shader_programs['default'], 
+                (cube, (x, y, z), texture((color[0]))))
+    objects.append(object[0])
+
+    # Hävitab kaks tekkinud tkinteri ekraani
+    window2.destroy()
+    window.destroy()
+    return
+
+
+
+### Hetkel ei ole need valmis (püüan leida lahendusi)
+def change_stuff():
+    window2 = tk.Toplevel()
+    window2.title("Muuda objekte")
+    window2.resizable(width=False, height=False)
+    window2.geometry("300x300")
+    
+
+def remove_stuff():
+    window2 = tk.Toplevel()
+    window2.title("Eemalda objekte")
+    window2.resizable(width=False, height=False)
+    window2.geometry("300x300")
+    
+
 def main():
+    global objects, vaos, shader_programs
     shader_programs = {}
     vbos = {}
     vaos = {}
