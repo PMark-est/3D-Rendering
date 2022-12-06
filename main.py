@@ -253,51 +253,38 @@ def create_models_gui():
     window.resizable(width=False, height=False)
     window.geometry("300x300")
 
-    # Raamid, mille sisse tulevad elemendid
+    # Raam, mille sisse tulevad elemendid
     frame_a = tk.Frame(master=window)
-    frame_b = tk.Frame(master=window)
 
     # Tekst
-    label = tk.Label(
-        master=frame_a,
-        text="Vali tegevus", 
-        font=10, 
-        width=25, height=10
-    )
+    label = tk.Label(master=frame_a, text="Vali tegevus", font=10, width=25, height=10)
 
     # Nupud
-    button1 = tk.Button(
-        master=frame_b, 
-        text="Lisa objekte",
-        width=25,
-        command = add_stuff
-    )
-
-    button2 = tk.Button(
-        master=frame_b, 
-        text="Muuda objekte",
-        width=25,
-        command = change_stuff
-    )
-
-    button3 = tk.Button(
-        master=frame_b, 
-        text="Eemalda objekte",
-        width=25,
-        command = remove_stuff
-    )
+    button1 = tk.Button(master=frame_a, text="Lisa objekte", width=25, command = add_stuff)
+    button2 = tk.Button(master=frame_a, text="Muuda/eemalda objekte", width=25, command = change_stuff)
+    button4 = tk.Button(master=frame_a, text="Muuda valguse asukohta", width=25, command = change_light)
+    button5 = tk.Button(master=frame_a, text="Muuda tausta värvi", width=25, command = change_scene)
     
     # Teeb kõik elemendid kuvatavaks vist
     label.pack()
-    frame_a.pack()
 
     button1.pack()
     button2.pack()
-    button3.pack()
-    frame_b.pack()
+    button4.pack()
+    button5.pack()
+
+    frame_a.pack()
 
     # Põhitsükkel tööle, ehk kuvab tekitatud akna
     window.mainloop()
+
+def close_gui(a):
+    """Funktsioon tkinteri akende sulgemiseks, et ei peaks iga funktsiooni lõpus seda olema"""
+    global window, window2
+    # Kui on edastatud aknate arv kahena (ühe tehtava funktsiooni korral on see 1 ehk teist akent ei looda)
+    if a == 2:
+        window2.destroy()
+    window.destroy()
 
     
 def add_stuff():
@@ -310,15 +297,11 @@ def add_stuff():
     window2.resizable(width=False, height=False)
     window2.geometry("300x300")
 
-    # Raamid
+    # Raam
     frame_c = tk.Frame(master=window2, width=30)
-    frame_d = tk.Frame(master=window2, width=30)
-    frame_e = tk.Frame(master=window2, width=30)
-    frame_f = tk.Frame(master=window2, width=30)
-    frame_g = tk.Frame(master=window2, width=30)
     
     # Tekst
-    label_info = tk.Label(master=frame_g, text="Sisesta koordinaadid")
+    label_info = tk.Label(master=frame_c, text="Sisesta koordinaadid")
 
     # Sisestuskastid
     x = tk.StringVar()
@@ -327,18 +310,17 @@ def add_stuff():
     x_entry.focus()
 
     y = tk.StringVar()
-    label_y = tk.Label(master=frame_d, text="Y")
-    y_entry = ttk.Entry(master=frame_d, textvariable=y)
+    label_y = tk.Label(master=frame_c, text="Y")
+    y_entry = ttk.Entry(master=frame_c, textvariable=y)
     
     z = tk.StringVar()
-    label_z = tk.Label(master=frame_e, text="Z")
-    z_entry = ttk.Entry(master=frame_e, textvariable=z)
+    label_z = tk.Label(master=frame_c, text="Z")
+    z_entry = ttk.Entry(master=frame_c, textvariable=z)
 
     # Nupp
-    button = tk.Button(master=frame_f, text="Edasi värvi valima", command=color_chooser)
+    button = tk.Button(master=frame_c, text="Edasi värvi valima", command=color_chooser)
 
     # Kõik elemendid kuvatavaks vist
-    button.pack()
     label_info.pack()
 
     label_x.pack()
@@ -350,12 +332,9 @@ def add_stuff():
     label_z.pack()
     z_entry.pack()
 
+    button.pack()
 
-    frame_g.pack()
     frame_c.pack()
-    frame_d.pack()
-    frame_e.pack()
-    frame_f.pack()
 
     # Akna põhitsükkel
     window2.mainloop()
@@ -363,17 +342,17 @@ def add_stuff():
 
 
 def color_chooser():
-    """Kui eelmisel ekraanil sai koordinaadid sisestatud ja nuppu vajutatud"""
-    global window2, window, color, x, y, z
+    """Funktsioon, mis võtab eelnevast funktsioonist x-y-z koordinaadid, küsib värvi ja loob neist objekti"""
+    global color, x, y, z
     
     # Windowsi basic color picker
     color = colorchooser.askcolor(title="Vali värv")
 
     # Teeb eelnevalt kasti sisestatud koordinaadid arvudeks
     try:
-        x = int(x.get())
-        y = int(y.get())
-        z = int(z.get())
+        x = float(x.get())
+        y = float(y.get())
+        z = float(z.get())
     except:
         raise Exception("Sisestatud koordinaadid ei ole arvud")
     
@@ -382,26 +361,158 @@ def color_chooser():
                 (cube, (x, y, z), texture((color[0]))))
     objects.append(object[0])
 
-    # Hävitab kaks tekkinud tkinteri ekraani
-    window2.destroy()
-    window.destroy()
+    close_gui(2)
     return
 
 
-
-### Hetkel ei ole need valmis (püüan leida lahendusi)
 def change_stuff():
+    """Aken objektide nimekirjaga, kus saab valida kas muuta värvi või eemaldada"""
+    global objects, listbox, window2
     window2 = tk.Toplevel()
     window2.title("Muuda objekte")
     window2.resizable(width=False, height=False)
     window2.geometry("300x300")
-    
 
-def remove_stuff():
+    frame_b = tk.Frame(master=window2, width=30)
+
+    valik = []
+    # Lisab kõikide olevate objektide koordinaadid järjendisse
+    for obj in objects:
+        valik.append(obj[2].to_tuple()[3][0:3])
+    list_items = tk.Variable(value=valik)
+
+    # Kast, kus saab valida ühte rida
+    listbox = tk.Listbox(master=frame_b, listvariable=list_items, selectmode=tk.SINGLE)
+
+    # Nupud
+    button1 = tk.Button(master=frame_b, text="Muuda värvi", command=change)
+    button2 = tk.Button(master=frame_b, text="Eemalda", command=remove)
+
+    listbox.pack()
+    button1.pack()
+    button2.pack()
+    frame_b.pack()
+
+    window2.mainloop()
+
+def change():
+    """Funktsioon objekti värvi muutmiseks"""
+    global listbox, objects
+    i = listbox.curselection()
+    coord = listbox.get(i)
+    # Leiab muudetava objekti koordinaadid ehk eelnevast nimekirjast otsib need
+    x, y, z = float(coord[0]), float(coord[1]), float(coord[2])
+    # Eemaldab valitud objekti
+    objects.pop(i[0])
+
+    color = colorchooser.askcolor(title="Vali värv")
+    # Koostab uue objekti samade koordinaatide peale
+    object = create_models(vaos, shader_programs['default'], 
+                (cube, (x, y, z), texture((color[0]))))
+    objects.append(object[0])
+
+    close_gui(2)
+    return
+
+def remove():
+    """Funktsioon objekti eemaldamiseks"""
+    global listbox, objects
+    # Leiab nimekirjast valitud rea numbri
+    i = listbox.curselection()
+    # Eemaldab vastava numbriga rea objektide nimekirjast 
+    # (i[0], sest eelnev funktsioon tagastab tuple formaadis indeksi)
+    objects.pop(i[0])
+
+    close_gui(2)
+    return
+
+def change_light():
+    """Aken valguse "lambi" asukoha väärtuste sisestamiseks"""
+    global window2, x, y, z, VALGUS_X, VALGUS_Y, VALGUS_Z
+    # Uus aken
     window2 = tk.Toplevel()
-    window2.title("Eemalda objekte")
+    window2.title("Muuda valgust")
     window2.resizable(width=False, height=False)
     window2.geometry("300x300")
+
+    frame_b = tk.Frame(master=window2, width=30)
+    # Teksti kastid
+    label_info1 = tk.Label(master=frame_b, text="Hetkel valguse asukoht:")
+    label_info2 = tk.Label(master=frame_b, text=f"{VALGUS_X}, {VALGUS_Y}, {VALGUS_Z}")
+    label_info3 = tk.Label(master=frame_b, text="Sisesta koordinaadid")
+
+    # Sisestuskastid
+    x = tk.StringVar()
+    label_x = tk.Label(master=frame_b, text="X")
+    x_entry = ttk.Entry(master=frame_b, textvariable=x)
+    x_entry.focus()
+
+    y = tk.StringVar()
+    label_y = tk.Label(master=frame_b, text="Y")
+    y_entry = ttk.Entry(master=frame_b, textvariable=y)
+    
+    z = tk.StringVar()
+    label_z = tk.Label(master=frame_b, text="Z")
+    z_entry = ttk.Entry(master=frame_b, textvariable=z)
+
+    # Nupp
+    button = tk.Button(master=frame_b, text="Muuda valguse asukoht", command=move_light)
+
+    # Kõik elemendid kuvatavaks vist
+    label_info1.pack()
+    label_info2.pack()
+    label_info3.pack()
+
+    label_x.pack()
+    x_entry.pack()
+
+    label_y.pack()
+    y_entry.pack()
+
+    label_z.pack()
+    z_entry.pack()
+
+    button.pack()
+
+    frame_b.pack()
+
+    # Akna põhitsükkel
+    window2.mainloop()
+
+def move_light():
+    """Funktsioon valguse "lambi" asukoha muutmiseks"""
+    global x, y, z, position_v, up, m_view_light, objects, VALGUS_X, VALGUS_Y, VALGUS_Z
+    try:
+        x = float(x.get())
+        y = float(y.get())
+        z = float(z.get())
+    except:
+        raise Exception("Sisestatud koordinaadid ei ole arvud")
+    
+    # Muudab antud muutujad ära, et hiljem uuesti kasutades sellele eelnevat funktsiooni, oleks näidatavad arvud õiged
+    VALGUS_X, VALGUS_Y, VALGUS_Z = x, y, z
+    position_v = glm.vec3(x, y, z)
+
+    m_view_light = glm.lookAt(position_v, glm.vec3(0, 0, 0), up)
+
+    # Lükkab uued valguse/varju väärtused renderisse
+    for obj in objects:
+        obj[1][0]['light.position_v'].write(position_v)
+        obj[1][0]['m_view_light'].write(m_view_light)
+
+    close_gui(2)
+    return
+
+
+
+def change_scene():
+    global RED, GREEN, BLUE
+    color = colorchooser.askcolor(title="Vali värv")
+
+    # Teeb valitud 0-255 väärtused 0-1 vahemikku 
+    RED, GREEN, BLUE = color[0][0]/255, color[0][1]/255, color[0][2]/255
+    close_gui(1)
+    return
     
 
 def main():
