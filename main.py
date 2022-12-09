@@ -543,7 +543,6 @@ def main():
                             )
 
     while 1:
-        print()
         check_events(vaos, vbos, shader_programs)
         # Uuendab ekranni
         ctx.clear(color=(RED, GREEN, BLUE))
@@ -551,7 +550,6 @@ def main():
         render_shadow(objects)
         # siis põhipilt
         render_scene(objects)
-        intersection_test(objects, 4)
         pg.display.flip()
         # FPS
         clock.tick(60)
