@@ -340,9 +340,9 @@ def add_stuff(start, count):
 
     # Nupud
     button = tk.Button(
-        window2, text="Edasi värvi valima", command= lambda: create(start, x, y, z, name, "color", "add", count))
+        window2, text="Edasi värvi valima", command= lambda: create(x, y, z, name, "color", "add", count, start))
     button2 = tk.Button(
-        window2, text="Või vali oma pilt", command= lambda: create(start, x, y, z, name, "image", "add", count))
+        window2, text="Või vali oma pilt", command= lambda: create(x, y, z, name, "image", "add", count, start))
 
     label_info2 = tk.Label(window2, text="Töökindel .jpg failidega, teiste tüüpidega vastutad ise")
 
@@ -369,7 +369,7 @@ def add_stuff(start, count):
     window2.mainloop()
 
 
-def create(start, x, y, z, name, choice, action, count):
+def create(x, y, z, name, choice, action, count="", start=False):
     """Funktsioon, mis võtab eelnevast funktsioonist x-y-z koordinaadid, küsib värvi ja loob neist objekti"""
     if action == "add":
         # Teeb eelnevalt kasti sisestatud koordinaadid arvudeks
