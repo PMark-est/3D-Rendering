@@ -25,7 +25,8 @@ def check_events(vaos, vbos, shader_programs):
             if event.key == pg.K_ESCAPE:
                 pause(vaos, vbos, shader_programs)
             if event.key == pg.K_f:
-                pg.event.set_grab(False)  # toob hiire nähtavale ja laseb vabaks
+                # toob hiire nähtavale ja laseb vabaks
+                pg.event.set_grab(False)
                 pg.mouse.set_visible(True)
                 pg.mouse.set_pos(WIN_SIZE[0] / 2, WIN_SIZE[1] / 2)
                 create_models_gui()
@@ -257,14 +258,19 @@ def create_models_gui():
     frame_a = tk.Frame(master=window)
 
     # Tekst
-    label = tk.Label(master=frame_a, text="Vali tegevus", font=10, width=25, height=10)
+    label = tk.Label(master=frame_a, text="Vali tegevus",
+                     font=10, width=25, height=10)
 
     # Nupud
-    button1 = tk.Button(master=frame_a, text="Lisa objekte", width=25, command = add_stuff)
-    button2 = tk.Button(master=frame_a, text="Muuda/eemalda objekte", width=25, command = change_stuff)
-    button4 = tk.Button(master=frame_a, text="Muuda valguse asukohta", width=25, command = change_light)
-    button5 = tk.Button(master=frame_a, text="Muuda tausta värvi", width=25, command = change_scene)
-    
+    button1 = tk.Button(master=frame_a, text="Lisa objekte",
+                        width=25, command=add_stuff)
+    button2 = tk.Button(
+        master=frame_a, text="Muuda/eemalda objekte", width=25, command=change_stuff)
+    button4 = tk.Button(
+        master=frame_a, text="Muuda valguse asukohta", width=25, command=change_light)
+    button5 = tk.Button(
+        master=frame_a, text="Muuda tausta värvi", width=25, command=change_scene)
+
     # Teeb kõik elemendid kuvatavaks vist
     label.pack()
 
@@ -278,6 +284,7 @@ def create_models_gui():
     # Põhitsükkel tööle, ehk kuvab tekitatud akna
     window.mainloop()
 
+
 def close_gui(a):
     """Funktsioon tkinteri akende sulgemiseks, et ei peaks iga funktsiooni lõpus seda olema"""
     global window, window2
@@ -286,11 +293,11 @@ def close_gui(a):
         window2.destroy()
     window.destroy()
 
-    
+
 def add_stuff():
     """Teine ekraan mis tuleb ette kui vajutad esimesel nuppu "Lisa objekte" """
     global window2, color, objects, vaos, shader_programs, x, y, z
-    
+
     # Uus aken uue muutuja nimega
     window2 = tk.Toplevel()
     window2.title("Lisa objekte")
@@ -299,7 +306,7 @@ def add_stuff():
 
     # Raam
     frame_c = tk.Frame(master=window2, width=30)
-    
+
     # Tekst
     label_info = tk.Label(master=frame_c, text="Sisesta koordinaadid")
 
@@ -312,13 +319,14 @@ def add_stuff():
     y = tk.StringVar()
     label_y = tk.Label(master=frame_c, text="Y")
     y_entry = ttk.Entry(master=frame_c, textvariable=y)
-    
+
     z = tk.StringVar()
     label_z = tk.Label(master=frame_c, text="Z")
     z_entry = ttk.Entry(master=frame_c, textvariable=z)
 
     # Nupp
-    button = tk.Button(master=frame_c, text="Edasi värvi valima", command=color_chooser)
+    button = tk.Button(
+        master=frame_c, text="Edasi värvi valima", command=color_chooser)
 
     # Kõik elemendid kuvatavaks vist
     label_info.pack()
@@ -340,11 +348,10 @@ def add_stuff():
     window2.mainloop()
 
 
-
 def color_chooser():
     """Funktsioon, mis võtab eelnevast funktsioonist x-y-z koordinaadid, küsib värvi ja loob neist objekti"""
     global color, x, y, z
-    
+
     # Windowsi basic color picker
     color = colorchooser.askcolor(title="Vali värv")
 
@@ -355,10 +362,10 @@ def color_chooser():
         z = float(z.get())
     except:
         raise Exception("Sisestatud koordinaadid ei ole arvud")
-    
+
     # Lisab need objektide nimekirja
-    object = create_models(vaos, shader_programs['default'], 
-                (cube, (x, y, z), texture((color[0]))))
+    object = create_models(vaos, shader_programs['default'],
+                           (cube, (x, y, z), texture((color[0]))))
     objects.append(object[0])
 
     close_gui(2)
@@ -382,7 +389,8 @@ def change_stuff():
     list_items = tk.Variable(value=valik)
 
     # Kast, kus saab valida ühte rida
-    listbox = tk.Listbox(master=frame_b, listvariable=list_items, selectmode=tk.SINGLE)
+    listbox = tk.Listbox(
+        master=frame_b, listvariable=list_items, selectmode=tk.SINGLE)
 
     # Nupud
     button1 = tk.Button(master=frame_b, text="Muuda värvi", command=change)
@@ -394,6 +402,7 @@ def change_stuff():
     frame_b.pack()
 
     window2.mainloop()
+
 
 def change():
     """Funktsioon objekti värvi muutmiseks"""
@@ -407,24 +416,26 @@ def change():
 
     color = colorchooser.askcolor(title="Vali värv")
     # Koostab uue objekti samade koordinaatide peale
-    object = create_models(vaos, shader_programs['default'], 
-                (cube, (x, y, z), texture((color[0]))))
+    object = create_models(vaos, shader_programs['default'],
+                           (cube, (x, y, z), texture((color[0]))))
     objects.append(object[0])
 
     close_gui(2)
     return
+
 
 def remove():
     """Funktsioon objekti eemaldamiseks"""
     global listbox, objects
     # Leiab nimekirjast valitud rea numbri
     i = listbox.curselection()
-    # Eemaldab vastava numbriga rea objektide nimekirjast 
+    # Eemaldab vastava numbriga rea objektide nimekirjast
     # (i[0], sest eelnev funktsioon tagastab tuple formaadis indeksi)
     objects.pop(i[0])
 
     close_gui(2)
     return
+
 
 def change_light():
     """Aken valguse "lambi" asukoha väärtuste sisestamiseks"""
@@ -438,7 +449,8 @@ def change_light():
     frame_b = tk.Frame(master=window2, width=30)
     # Teksti kastid
     label_info1 = tk.Label(master=frame_b, text="Hetkel valguse asukoht:")
-    label_info2 = tk.Label(master=frame_b, text=f"{VALGUS_X}, {VALGUS_Y}, {VALGUS_Z}")
+    label_info2 = tk.Label(
+        master=frame_b, text=f"{VALGUS_X}, {VALGUS_Y}, {VALGUS_Z}")
     label_info3 = tk.Label(master=frame_b, text="Sisesta koordinaadid")
 
     # Sisestuskastid
@@ -450,13 +462,14 @@ def change_light():
     y = tk.StringVar()
     label_y = tk.Label(master=frame_b, text="Y")
     y_entry = ttk.Entry(master=frame_b, textvariable=y)
-    
+
     z = tk.StringVar()
     label_z = tk.Label(master=frame_b, text="Z")
     z_entry = ttk.Entry(master=frame_b, textvariable=z)
 
     # Nupp
-    button = tk.Button(master=frame_b, text="Muuda valguse asukoht", command=move_light)
+    button = tk.Button(
+        master=frame_b, text="Muuda valguse asukoht", command=move_light)
 
     # Kõik elemendid kuvatavaks vist
     label_info1.pack()
@@ -479,6 +492,7 @@ def change_light():
     # Akna põhitsükkel
     window2.mainloop()
 
+
 def move_light():
     """Funktsioon valguse "lambi" asukoha muutmiseks"""
     global x, y, z, position_v, up, m_view_light, objects, VALGUS_X, VALGUS_Y, VALGUS_Z
@@ -488,7 +502,7 @@ def move_light():
         z = float(z.get())
     except:
         raise Exception("Sisestatud koordinaadid ei ole arvud")
-    
+
     # Muudab antud muutujad ära, et hiljem uuesti kasutades sellele eelnevat funktsiooni, oleks näidatavad arvud õiged
     VALGUS_X, VALGUS_Y, VALGUS_Z = x, y, z
     position_v = glm.vec3(x, y, z)
@@ -504,16 +518,15 @@ def move_light():
     return
 
 
-
 def change_scene():
     global RED, GREEN, BLUE
     color = colorchooser.askcolor(title="Vali värv")
 
-    # Teeb valitud 0-255 väärtused 0-1 vahemikku 
+    # Teeb valitud 0-255 väärtused 0-1 vahemikku
     RED, GREEN, BLUE = color[0][0]/255, color[0][1]/255, color[0][2]/255
     close_gui(1)
     return
-    
+
 
 def main():
     global objects, vaos, shader_programs
@@ -526,12 +539,11 @@ def main():
     vbos = create_vbos(vbos)
     vaos = create_vaos(vaos, vbos['cube'], shader_programs)
     objects = create_models(vaos, shader_programs['default'],
-                            (cube, (5, 0, 0), texture((255, 0, 0))),
                             (cube, (5, 0, 0), texture((0, 0, 255)))
                             )
 
     while 1:
-        intersection_test(objects, 20)
+        print()
         check_events(vaos, vbos, shader_programs)
         # Uuendab ekranni
         ctx.clear(color=(RED, GREEN, BLUE))
@@ -539,6 +551,7 @@ def main():
         render_shadow(objects)
         # siis põhipilt
         render_scene(objects)
+        intersection_test(objects, 4)
         pg.display.flip()
         # FPS
         clock.tick(60)

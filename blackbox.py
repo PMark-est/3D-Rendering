@@ -144,12 +144,11 @@ def normalize(ray, dst, cur_pos):
 
 
 def intersection_test(objects, dst):
-    rayStart = glm.inverse(m_view)[3]
     # Leiab, mis nurga all maailmasse vaatame
-    x = np.abs(np.cos(np.radians(yaw)))
-    y = np.abs(np.sin(np.radians(pitch)))
-    z = np.abs(np.cos(np.radians(90-yaw)))
-    rayEnd = normalize((x, y, z), dst, rayStart)
+    x = np.cos(np.radians(yaw))
+    y = np.sin(np.radians(pitch))
+    z = np.cos(np.radians(90-yaw))
+    ray_end = normalize((x, y, z), dst, position)
     for obj in objects:
         matrix = obj[2]
         size_x = matrix[0][0]
@@ -160,14 +159,54 @@ def intersection_test(objects, dst):
         obj_y = coordinates[1]
         obj_z = coordinates[2]
 
-        x_collsion = rayStart[0] >= obj_x - \
-            size_x and rayStart[0] <= obj_x+size_x
-        y_collision = rayStart[1] >= obj_y - \
-            size_y and rayStart[1] <= obj_y+size_y
-        z_collision = rayStart[2] >= obj_z - \
-            size_z and rayStart[2] <= obj_z+size_z
-        if x_collsion and y_collision and z_collision:
-            print("COLLISION!")
+        end_x = ray_end[0]
+        start_x = position[0]
+        x_collision = False
+        i = 0
+        # Kaamera on objekti sees
+        if start_x > obj_x - size_x and start_x < obj_x + size_x:
+            continue
+        # Kaamera on suunatud pos. x-telge
+        if start_x <= obj_x-size_x and end_x >= obj_x-size_x:
+            while 1:
+                if end_x < obj_x-size_x:
+                    break
+                mid_point = (end_x - start_x)/2
+                if obj_x - size_x > start_x + mid_point:
+                    start_x += mid_point
+                elif obj_x - size_x < end_x - mid_point:
+                    end_x -= mid_point
+                if np.abs(end_x-obj_x+size_x) <= 0.1 or np.abs(start_x-obj_x+size_x) <= 0.1:
+                    x_collision = True
+                    break
+                if i == 100:
+                    print("Stuck in loop")
+                    break
+                i += 1
+        # Kaamera on suunatud neg. x-telge
+        elif start_x >= obj_x+size_x and end_x <= obj_x+size_x:
+            while 1:
+                if end_x > obj_x+size_x:
+                    break
+                mid_point = (start_x-end_x)/2
+                if obj_x + size_x < start_x - mid_point:
+                    start_x -= mid_point
+                elif obj_x + size_x > end_x + mid_point:
+                    end_x += mid_point
+                if np.abs(start_x-obj_x-size_x) <= 0.1 or np.abs(end_x-obj_x-size_x) <= 0.1:
+                    x_collision = True
+                    break
+                if i == 100:
+                    print("Stuck in loop")
+                    break
+                i += 1
+
+        # y_collision = ray_end[1] >= obj_y - \
+        #    size_y and ray_end[1] <= obj_y+size_y
+        # z_collision = ray_end[2] >= obj_z - \
+        #    size_z and ray_end[2] <= obj_z+size_z
+        if x_collision:
+            print("collision")
 
 
 def view_angle(x, y, z):
