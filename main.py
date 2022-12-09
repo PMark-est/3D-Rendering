@@ -24,6 +24,9 @@ def check_events(vaos, vbos, shader_programs):
                 pause(vaos, vbos, shader_programs)
             if event.key == pg.K_f:
                 create_models_gui(False)
+                pg.mouse.get_rel()
+                pg.event.set_grab(True)
+                pg.mouse.set_visible(False)
 
 
 def check_events_pause(vaos, vbos, shader_programs):
@@ -253,11 +256,13 @@ def create_models_gui(start):
 
     # Tekst
     label = tk.Label(window, text="Vali tegevus",
-                     font=10, width=25, height=10)
+                     font=10, width=25, height=5)
+    count = tk.Label(window, text=f"Hetkel objekte ekraanil: {len(objects)}",
+                     width=25, height=5)
 
     # Nupud
     button1 = tk.Button(window, text="Lisa objekte",
-                        width=25, command= lambda: add_stuff(start))
+                        width=25, command= lambda: add_stuff(start, count))
     if start == True:
         button2 = tk.Button(
             window, text="Alusta", width=25, command= lambda: close_gui(1))
@@ -271,6 +276,7 @@ def create_models_gui(start):
 
     # Teeb kõik elemendid kuvatavaks vist
     label.pack()
+    count.pack()
 
     button1.pack()
     button2.pack()
@@ -300,7 +306,7 @@ def close_gui(a):
     pg.mouse.set_visible(False)
 
 
-def add_stuff(start):
+def add_stuff(start, count):
     """Teine ekraan mis tuleb ette kui vajutad esimesel nuppu "Lisa objekte" """
     global window2
 
@@ -334,9 +340,9 @@ def add_stuff(start):
 
     # Nupud
     button = tk.Button(
-        window2, text="Edasi värvi valima", command= lambda: create(start, x, y, z, name, "color", "add"))
+        window2, text="Edasi värvi valima", command= lambda: create(start, x, y, z, name, "color", "add", count))
     button2 = tk.Button(
-        window2, text="Või vali oma pilt", command= lambda: create(start, x, y, z, name, "image", "add"))
+        window2, text="Või vali oma pilt", command= lambda: create(start, x, y, z, name, "image", "add", count))
 
     label_info2 = tk.Label(window2, text="Töökindel .jpg failidega, teiste tüüpidega vastutad ise")
 
@@ -363,7 +369,7 @@ def add_stuff(start):
     window2.mainloop()
 
 
-def create(start, x, y, z, name, choice, action):
+def create(start, x, y, z, name, choice, action, count):
     """Funktsioon, mis võtab eelnevast funktsioonist x-y-z koordinaadid, küsib värvi ja loob neist objekti"""
     if action == "add":
         # Teeb eelnevalt kasti sisestatud koordinaadid arvudeks
@@ -393,6 +399,8 @@ def create(start, x, y, z, name, choice, action):
     # pärast esimese objekti lisamist
     if start == True:
         close_gui("x")
+        # Uuendab teksti
+        count.config(text=f"Hetkel objekte ekraanil: {len(objects)}")
     else:
         close_gui(2)
 
