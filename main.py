@@ -11,6 +11,7 @@ import os
 import sys
 import tkinter as tk
 from tkinter import ttk, colorchooser, filedialog
+from PIL import ImageTk
 
 def check_events(vaos, vbos, shader_programs):
     move_camera()
@@ -253,16 +254,41 @@ def create_models_gui(start):
     window.resizable(width=False, height=False)
     window.geometry("300x300")
 
+    # Pildi variandina väga halvasti kirjutatud tekst
+    img = Image.open("textures/valitegevus.jpg")
+    img = img.resize((230, 70), Image.Resampling.LANCZOS)
+    img = ImageTk.PhotoImage(img)
+    panel = tk.Label(window, image=img)
+    panel.pack()
 
-    # Tekst
-    label = tk.Label(window, text="Vali tegevus",
-                     font=10, width=25, height=5)
-    count = tk.Label(window, text=f"Hetkel objekte ekraanil: {len(objects)}",
-                     width=25, height=5)
+    img2 = Image.open("textures/hetkelobjekteekraanil.jpg")
+    img2 = img2.resize((250, 60), Image.Resampling.LANCZOS)
+    img2 = ImageTk.PhotoImage(img2)
+    panel2 = tk.Label(window, image=img2)
+    panel2.pack()
+
+    # Teksti variandina sama jutt
+    #label = tk.Label(window, text="Vali tegevus",
+    #                 font=10, width=25, height=5)
+    #count = tk.Label(window, text=f"{len(objects)}",
+    #                 width=25, height=2)
+
+    # Halvasti kirjutatud arvud piltidena
+    number = []
+    panel3 = []
+    for i in range(len(str(len(objects)))):
+        a = str(len(objects))[i]
+        number.append(Image.open(f"textures/numbrid/{a}.jpg").resize((20, 30), Image.Resampling.LANCZOS))
+        number[i] = ImageTk.PhotoImage(number[i])
+        panel3.append(tk.Label(window, image=number[i]))
+        panel3[i].photo = number[i]
+       #panel3[i].grid(row=1, column=i)
+        panel3[i].pack()
+
 
     # Nupud
     button1 = tk.Button(window, text="Lisa objekte",
-                        width=25, command= lambda: add_stuff(start, count))
+                        width=25, command= lambda: add_stuff(start))
     if start == True:
         button2 = tk.Button(
             window, text="Alusta", width=25, command= lambda: close_gui(1))
@@ -275,8 +301,8 @@ def create_models_gui(start):
             window, text="Muuda tausta värvi", width=25, command=change_scene)
 
     # Teeb kõik elemendid kuvatavaks vist
-    label.pack()
-    count.pack()
+   #label.pack()
+    #count.pack()
 
     button1.pack()
     button2.pack()
@@ -306,7 +332,7 @@ def close_gui(a):
     pg.mouse.set_visible(False)
 
 
-def add_stuff(start, count):
+def add_stuff(start):
     """Teine ekraan mis tuleb ette kui vajutad esimesel nuppu "Lisa objekte" """
     global window2
 
@@ -340,9 +366,9 @@ def add_stuff(start, count):
 
     # Nupud
     button = tk.Button(
-        window2, text="Edasi värvi valima", command= lambda: create(x, y, z, name, "color", "add", count, start))
+        window2, text="Edasi värvi valima", command= lambda: create(x, y, z, name, "color", "add", start))
     button2 = tk.Button(
-        window2, text="Või vali oma pilt", command= lambda: create(x, y, z, name, "image", "add", count, start))
+        window2, text="Või vali oma pilt", command= lambda: create(x, y, z, name, "image", "add", start))
 
     label_info2 = tk.Label(window2, text="Töökindel .jpg failidega, teiste tüüpidega vastutad ise")
 
