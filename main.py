@@ -2,6 +2,12 @@
 Liikuda saab nuppudega W, A, S, D,
 SPACE, LSHIFT ning rakenduse saab
 sulgeda ESCAPE nupuga
+
+Enne programmi käivitamist peab installeerima järgmised teegid:
+numpy
+pygame
+PyGLM
+
 """
 from blackbox import *
 import pygame as pg
@@ -12,6 +18,7 @@ import sys
 import tkinter as tk
 from tkinter import ttk, colorchooser, filedialog
 from PIL import ImageTk
+
 
 def check_events(vaos, vbos, shader_programs):
     move_camera()
@@ -210,7 +217,7 @@ def pause(vaos, vbos, shader_programs):
     return
 
 
-def end_pause(): 
+def end_pause():
     """Funktsioon, mis paneb "paus" ekraani kinni ja viib tagasi põhivaatesse"""
     global objects_pause, Ia, Id, Is
     for obj in objects_pause:
@@ -238,6 +245,7 @@ def create_models(vaos, shader, *objects, name):
         pos = obj[1]
         objs.append(obj[0](vaos, shader, pos, texture, size, name))
     return objs
+
 
 def create_models_gui(start):
     """Esimene ekraan mis tuleb ette kui vajutad f tähte"""
@@ -268,9 +276,9 @@ def create_models_gui(start):
     panel2.pack()
 
     # Teksti variandina sama jutt
-    #label = tk.Label(window, text="Vali tegevus",
+    # label = tk.Label(window, text="Vali tegevus",
     #                 font=10, width=25, height=5)
-    #count = tk.Label(window, text=f"{len(objects)}",
+    # count = tk.Label(window, text=f"{len(objects)}",
     #                 width=25, height=2)
 
     # Halvasti kirjutatud arvud piltidena
@@ -278,20 +286,20 @@ def create_models_gui(start):
     panel3 = []
     for i in range(len(str(len(objects)))):
         a = str(len(objects))[i]
-        number.append(Image.open(f"textures/numbrid/{a}.jpg").resize((20, 30), Image.Resampling.LANCZOS))
+        number.append(Image.open(
+            f"textures/numbrid/{a}.jpg").resize((20, 30), Image.Resampling.LANCZOS))
         number[i] = ImageTk.PhotoImage(number[i])
         panel3.append(tk.Label(window, image=number[i]))
         panel3[i].photo = number[i]
        #panel3[i].grid(row=1, column=i)
         panel3[i].pack()
 
-
     # Nupud
     button1 = tk.Button(window, text="Lisa objekte",
-                        width=25, command= lambda: add_stuff(start))
+                        width=25, command=lambda: add_stuff(start))
     if start == True:
         button2 = tk.Button(
-            window, text="Alusta", width=25, command= lambda: close_gui(1))
+            window, text="Alusta", width=25, command=lambda: close_gui(1))
     else:
         button2 = tk.Button(
             window, text="Muuda/eemalda objekte", width=25, command=change_stuff)
@@ -301,8 +309,8 @@ def create_models_gui(start):
             window, text="Muuda tausta värvi", width=25, command=change_scene)
 
     # Teeb kõik elemendid kuvatavaks vist
-   #label.pack()
-    #count.pack()
+   # label.pack()
+    # count.pack()
 
     button1.pack()
     button2.pack()
@@ -342,7 +350,6 @@ def add_stuff(start):
     window2.resizable(width=False, height=False)
     window2.geometry("300x300")
 
-
     # Tekst
     label_info = tk.Label(window2, text="Sisesta koordinaadid")
 
@@ -366,11 +373,12 @@ def add_stuff(start):
 
     # Nupud
     button = tk.Button(
-        window2, text="Edasi värvi valima", command= lambda: create(x, y, z, name, "color", "add", start))
+        window2, text="Edasi värvi valima", command=lambda: create(x, y, z, name, "color", "add", start))
     button2 = tk.Button(
-        window2, text="Või vali oma pilt", command= lambda: create(x, y, z, name, "image", "add", start))
+        window2, text="Või vali oma pilt", command=lambda: create(x, y, z, name, "image", "add", start))
 
-    label_info2 = tk.Label(window2, text="Töökindel .jpg failidega, teiste tüüpidega vastutad ise")
+    label_info2 = tk.Label(
+        window2, text="Töökindel .jpg failidega, teiste tüüpidega vastutad ise")
 
     # Kõik elemendid kuvatavaks vist
     label_info.pack()
@@ -414,7 +422,7 @@ def create(x, y, z, name, choice, action, count="", start=False):
 
     elif choice == "image":
         # Laseb kasutajal ise valida pildi objektile
-        color = filedialog.askopenfilename(title ='Vali pilt')
+        color = filedialog.askopenfilename(title='Vali pilt')
 
     # Lisab need objektide nimekirja
     object = create_models(vaos, shader_programs['default'],
@@ -439,7 +447,6 @@ def change_stuff():
     window2.resizable(width=False, height=False)
     window2.geometry("300x300")
 
-
     valik = []
     coords = []
     # Lisab kõikide olevate objektide koordinaadid järjendisse
@@ -455,9 +462,12 @@ def change_stuff():
         window2, listvariable=list_items, selectmode=tk.SINGLE)
 
     # Nupud
-    button1 = tk.Button(window2, text="Muuda värvi", command= lambda: change(listbox, coords, True, "color"))
-    button2 = tk.Button(window2, text="Muuda pilti", command= lambda: change(listbox, coords, True, "image"))
-    button3 = tk.Button(window2, text="Eemalda", command= lambda: change(listbox, coords, False))
+    button1 = tk.Button(window2, text="Muuda värvi",
+                        command=lambda: change(listbox, coords, True, "color"))
+    button2 = tk.Button(window2, text="Muuda pilti",
+                        command=lambda: change(listbox, coords, True, "image"))
+    button3 = tk.Button(window2, text="Eemalda",
+                        command=lambda: change(listbox, coords, False))
 
     listbox.pack()
     button1.pack()
@@ -487,8 +497,8 @@ def change(listbox, coords, replace, choice=""):
     if replace == True:
         create(x, y, z, name, choice, "replace")
 
-
     close_gui(2)
+
 
 def change_light():
     """Aken valguse "lambi" asukoha väärtuste sisestamiseks"""
@@ -521,7 +531,7 @@ def change_light():
 
     # Nupp
     button = tk.Button(
-        window2, text="Muuda valguse asukoht", command= lambda: move_light(x, y, z))
+        window2, text="Muuda valguse asukoht", command=lambda: move_light(x, y, z))
 
     # Kõik elemendid kuvatavaks vist
     label_info1.pack()
@@ -538,7 +548,6 @@ def change_light():
     z_entry.pack()
 
     button.pack()
-
 
     # Akna põhitsükkel
     window2.mainloop()
@@ -594,7 +603,6 @@ def main():
         objects = create_models(vaos, shader_programs['default'],
                                 (cube, (5, 0, 0), texture((0, 0, 255))), name="Tavaline kast"
                                 )
-    
 
     while 1:
         check_events(vaos, vbos, shader_programs)

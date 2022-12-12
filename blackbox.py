@@ -151,6 +151,7 @@ def intersection_test(objects, dst):
     y = np.sin(np.radians(pitch))
     z = np.cos(np.radians(90-yaw))
     ray_end = normalize((x, y, z), dst, position)
+    intersecting_objects = []
     for obj in objects:
         matrix = obj[2]
         size_x = matrix[0][0]
@@ -161,54 +162,73 @@ def intersection_test(objects, dst):
         obj_y = coordinates[1]
         obj_z = coordinates[2]
 
-        end_x = ray_end[0]
         start_x = position[0]
-        x_collision = False
-        i = 0
-        # Kaamera on objekti sees
-        if start_x > obj_x - size_x and start_x < obj_x + size_x:
-            continue
-        # Kaamera on suunatud pos. x-telge
-        if start_x <= obj_x-size_x and end_x >= obj_x-size_x:
-            while 1:
-                if end_x < obj_x-size_x:
-                    break
-                mid_point = (end_x - start_x)/2
-                if obj_x - size_x > start_x + mid_point:
-                    start_x += mid_point
-                elif obj_x - size_x < end_x - mid_point:
-                    end_x -= mid_point
-                if np.abs(end_x-obj_x+size_x) <= 0.1 or np.abs(start_x-obj_x+size_x) <= 0.1:
-                    x_collision = True
-                    break
-                if i == 100:
-                    print("Stuck in loop")
-                    break
-                i += 1
-        # Kaamera on suunatud neg. x-telge
-        elif start_x >= obj_x+size_x and end_x <= obj_x+size_x:
-            while 1:
-                if end_x > obj_x+size_x:
-                    break
-                mid_point = (start_x-end_x)/2
-                if obj_x + size_x < start_x - mid_point:
-                    start_x -= mid_point
-                elif obj_x + size_x > end_x + mid_point:
-                    end_x += mid_point
-                if np.abs(start_x-obj_x-size_x) <= 0.1 or np.abs(end_x-obj_x-size_x) <= 0.1:
-                    x_collision = True
-                    break
-                if i == 100:
-                    print("Stuck in loop")
-                    break
-                i += 1
+        start_y = position[1]
+        start_z = position[2]
+        end_x = ray_end[0]
+        end_y = ray_end[1]
+        end_z = ray_end[2]
 
-        # y_collision = ray_end[1] >= obj_y - \
-        #    size_y and ray_end[1] <= obj_y+size_y
-        # z_collision = ray_end[2] >= obj_z - \
-        #    size_z and ray_end[2] <= obj_z+size_z
-        if x_collision:
-            print("collision")
+        # Kaamera on objekti sees
+        x_in = start_x > obj_x - size_x and start_x < obj_x + size_x
+        z_in = start_z < obj_z + size_z and start_z > obj_z - size_z
+        y_in = start_y > obj_y - size_y and start_y < obj_y + size_y
+        if x_in and z_in and y_in:
+            continue
+
+        # Kas kaamera vaatab üldse objekti suunas/ kas kaamera on õiges positsioonis, et näha
+        # objekti
+        if reach_test(start_y, end_y, obj_y, size_y):
+            continue
+        if reach_test(start_x, end_x, obj_x, size_x):
+            continue
+        if reach_test(start_z, end_z, obj_z, size_z):
+            continue
+
+        if find_side(start_x, obj_x, size_x):
+            if start_z <= obj_z - size_z:
+                print("z+")
+            elif start_z >= obj_z + size_z:
+                print("z-")
+            continue
+        elif find_side(start_z, obj_z, size_z):
+            if start_x <= obj_x - size_x:
+                angle_l = np.rad2deg(np.arctan(start_z-obj_z+size_z) /
+                                     (obj_x-size_x-start_x))
+                angle_r = np.rad2deg(np.arctan(obj_z+size_z-start_z) /
+                                     (obj_x-size_x-start_x))
+                if 270 < yaw <= 360 - angle_l:
+                    continue
+                elif 90 > yaw >= angle_r:
+                    continue
+                intersecting_objects.append(obj)
+            elif start_x >= obj_x + size_x:
+                angle_l = np.rad2deg(np.arctan(obj_z+size_z-start_z) /
+                                     (start_x-obj_x-size_x))
+                angle_r = np.rad2deg(np.arctan(start_z-obj_z+size_z) /
+                                     (start_x-obj_x-size_x))
+                if 90 < yaw <= 180-angle_l:
+                    continue
+                elif 270 > yaw >= 180+angle_r:
+                    continue
+                intersecting_objects.append(obj)
+            continue
+        else:
+            print("on xz")
+            continue
+    return intersecting_objects
+
+
+def reach_test(start, end, pos, size):
+    if start < pos - size and end < pos - size:
+        return True
+    if start > pos + size and end > pos + size:
+        return True
+
+
+def find_side(start, pos, size):
+    if start >= pos - size and start <= pos + size:
+        return True
 
 
 def view_angle(x, y, z):
