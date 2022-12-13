@@ -23,7 +23,7 @@ from PIL import ImageTk
 def check_events(vaos, vbos, shader_programs):
     move_camera()
     rotate_camera()
-    a = intersection_test(objects, 10)
+    obj = intersection_test(objects, 10)
     for event in pg.event.get():
         # Kontrollib sulgemist
         if event.type == pg.QUIT:
@@ -37,13 +37,9 @@ def check_events(vaos, vbos, shader_programs):
                 pg.event.set_grab(True)
                 pg.mouse.set_visible(False)
             if event.key == pg.K_UP:
-                if a == []:
+                if obj == []:
                     return
-                x = a[0][2][3][0]
-                size = a[0][2][0][0], a[0][2][1][1], a[0][2][2][2]
-                m_model = glm.translate((x+5, 0, 5))
-                m_model = glm.scale(m_model, size)
-                a[0][2] = m_model
+                move_object(obj)
 
 
 
@@ -254,6 +250,85 @@ def create_models(vaos, shader, *objects):
 def model(obj, texture, name, pos=(1, 1, 1), size=(1, 1, 1)):
     return obj, texture, name, pos, size
 
+def move_object(obj):
+    """Funktsioon objekti asukoha muutmiseks"""
+    global window
+
+    x = obj[0][2][3][0]
+    size = obj[0][2][0][0], obj[0][2][1][1], obj[0][2][2][2]
+
+    pg.event.set_grab(False)
+    pg.mouse.set_visible(True)
+    pg.mouse.set_pos(WIN_SIZE[0] / 2, WIN_SIZE[1] / 2)
+
+    window = tk.Tk()
+    window.title("Liiguta objekti")
+    window.resizable(width=False, height=False)
+    window.geometry(window_position(500, 400))
+
+    items = {}
+
+    items['info'] = tk.Label(window, text="Sisesta uued koordinaadid")
+
+    items['label_x'] = tk.Label(window, text="X")
+    x = tk.StringVar()
+    items['x_entry'] = ttk.Entry(window, textvariable=x)
+    items['x_entry'].focus()
+
+    items['label_y'] = tk.Label(window, text="Y")
+    y = tk.StringVar()
+    items['y_entry'] = ttk.Entry(window, textvariable=y)
+
+    items['label_z'] = tk.Label(window, text="Z")
+    z = tk.StringVar()
+    items['z_entry'] = ttk.Entry(window, textvariable=z)
+
+
+    items['button'] = tk.Button(
+        window, text="Muuda asukohta", command=lambda: move(obj, x, y, z, size))
+
+    # Teeb kõik nähtavale vähemate ridade kirjutamisega
+    for el in items.values():
+        el.pack()
+
+    window.mainloop()
+
+def move(obj, x, y, z, size):
+    try:
+        x = float(x.get())
+        y = float(y.get())
+        z = float(z.get())
+    except:
+        raise Exception("Sisestatud koordinaadid ei ole arvud")
+
+    m_model = glm.translate((x, y, z))
+    m_model = glm.scale(m_model, size)
+    obj[0][2] = m_model
+
+    close_gui()
+
+
+def window_position(width, height):
+    """Funktsioon tkinteri akna ekraani keskele paigutamiseks"""
+    # leiab ekraani laiuse ja kõrguse
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+
+    # Arvutab ekraani keskkoha, arvestades akna suurust
+    x = (screen_width*0.5) - (width/2)
+    y = (screen_height*0.5) - (height/2)
+
+    # Kontrollib, kas saadud tulemused jäävad ekraani sisse üldse
+    if x > screen_width - width:
+        x  = screen_width - width
+    if x < width:
+        x = 0.0
+    if y > screen_height - height:
+        y  = screen_height - height*1.25
+    if y < 0:
+        y = 0
+    return f'{int(width)}x{int(height)}+{int(x)}+{int(y)}'
+
 
 def create_models_gui(start):
     """Esimene ekraan mis tuleb ette kui vajutad f tähte"""
@@ -268,20 +343,19 @@ def create_models_gui(start):
     window = tk.Tk()
     window.title("Muuda stseeni")
     window.resizable(width=False, height=False)
-    window.geometry("500x500")
+    window.geometry(window_position(500, 400))
 
+    items = []
     # Pildi variandina väga halvasti kirjutatud tekst
     img = Image.open("textures/valitegevus.jpg")
     img = img.resize((230, 70), Image.Resampling.LANCZOS)
     img = ImageTk.PhotoImage(img)
-    label1 = tk.Label(window, image=img)
-    label1.pack()
+    items.append(tk.Label(window, image=img))
 
     img2 = Image.open("textures/hetkelobjekteekraanil.jpg")
     img2 = img2.resize((250, 60), Image.Resampling.LANCZOS)
     img2 = ImageTk.PhotoImage(img2)
-    label2 = tk.Label(window, image=img2)
-    label2.pack()
+    items.append(tk.Label(window, image=img2))
 
     # Halvasti kirjutatud arvud piltidena 
     # Järjendi pikkus sõnena, et võtta üksikud numbrid järjest
@@ -292,29 +366,25 @@ def create_models_gui(start):
         number = ImageTk.PhotoImage(number)
         count = (tk.Label(window, image=number))
         count.photo = number
-        count.pack()
+        items.append(count)
 
     # Nupud
-    button1 = tk.Button(window, text="Lisa objekte",
-                        width=25, command=lambda: add_stuff(start))
+    items.append(tk.Button(window, text="Lisa objekte",
+                        width=25, command=lambda: add_stuff(start)))
     if start == True:
-        button2 = tk.Button(
-            window, text="Alusta", width=25, command=lambda: close_gui())
+        items.append(tk.Button(
+            window, text="Alusta", width=25, command=lambda: close_gui()))
     else:
-        button2 = tk.Button(
-            window, text="Muuda/eemalda objekte", width=25, command=change_stuff)
-        button4 = tk.Button(
-            window, text="Muuda valguse asukohta", width=25, command=change_light)
-        button5 = tk.Button(
-            window, text="Muuda tausta värvi", width=25, command=change_scene)
+        items.append(tk.Button(
+            window, text="Muuda/eemalda objekte", width=25, command=change_stuff))
+        items.append(tk.Button(
+            window, text="Muuda valguse asukohta", width=25, command=change_light))
+        items.append(tk.Button(
+            window, text="Muuda tausta värvi", width=25, command=change_scene))
 
-    # Teeb kõik elemendid kuvatavaks
-    button1.pack()
-    button2.pack()
-    # Kui programm ei ole esimest korda tööl
-    if start == False:
-        button4.pack()
-        button5.pack()
+    # Toob elemendid nähtavale
+    for el in items:
+        el.pack()
 
     # Põhitsükkel tööle, ehk kuvab tekitatud akna
     window.mainloop()
@@ -341,7 +411,7 @@ def add_stuff(start):
     window2 = tk.Toplevel(window)
     window2.title("Lisa objekte")
     window2.resizable(width=False, height=False)
-    window2.geometry("500x500")
+    window2.geometry(window_position(500, 400))
     window2.columnconfigure(0, weight=1)
     window2.columnconfigure(1, weight=1)
 
@@ -366,7 +436,7 @@ def add_stuff(start):
     size_y = tk.StringVar()
     y2_entry = ttk.Entry(window2, textvariable=size_y)
 
-    label_z = tk.Label(window2, text="Z")
+    label_z = tk.Label(window2, text="Z (on üles/alla telg)")
     z = tk.StringVar()
     z_entry = ttk.Entry(window2, textvariable=z)
 
@@ -463,7 +533,7 @@ def change_stuff():
     window2 = tk.Toplevel(window)
     window2.title("Muuda objekte")
     window2.resizable(width=False, height=False)
-    window2.geometry("500x500")
+    window2.geometry(window_position(500, 400))
 
     valik = []
     coords = []
@@ -529,7 +599,7 @@ def change_light():
     window2 = tk.Toplevel(window)
     window2.title("Muuda valgust")
     window2.resizable(width=False, height=False)
-    window2.geometry("500x500")
+    window2.geometry(window_position(500, 400))
 
     # Teksti kastid
     label_info1 = tk.Label(window2, text="Hetkel valguse asukoht:")
