@@ -40,7 +40,9 @@ def check_events(vaos, vbos, shader_programs):
                 if a == []:
                     return
                 x = a[0][2][3][0]
+                size = a[0][2][0][0], a[0][2][1][1], a[0][2][2][2]
                 m_model = glm.translate((x+5, 0, 5))
+                m_model = glm.scale(m_model, size)
                 a[0][2] = m_model
 
 
@@ -238,21 +240,19 @@ def end_pause():
     return
 
 
-def create_models(vaos, shader, *objects, name):
+def create_models(vaos, shader, *objects):
     objs = []
     for obj in objects:
-        if len(obj) == 2:
-            pos = (0, 0, 0)
-            size = (1, 1, 1)
-        elif len(obj) == 3:
-            size = (1, 1, 1)
-            texture = obj[2]
-        else:
-            size = obj[3]
-            texture = obj[2]
-        pos = obj[1]
+        texture = obj[1]
+        name = obj[2]
+        pos = obj[3]
+        size = obj[4]
         objs.append(obj[0](vaos, shader, pos, texture, size, name))
     return objs
+
+#(cube, (5, 0, 0), texture((0, 0, 255))), name="Tavaline kast"
+def model(obj, texture, name, pos=(1, 1, 1), size=(1, 1, 1)):
+    return obj, texture, name, pos, size
 
 
 def create_models_gui(start):
@@ -434,7 +434,7 @@ def create(x, y, z, name, choice, action, count="", start=False):
 
     # Lisab need objektide nimekirja
     object = create_models(vaos, shader_programs['default'],
-                           (cube, (x, y, z), texture((color))), name=name)
+                           model(cube, texture((color)), name, (x,y,z)))
     objects.append(object[0])
 
     # Kui on alles programm käima pandud, siis ei taha, et see automaatselt kõik kinni paneks
@@ -609,9 +609,10 @@ def main():
     # Kui ei ole lisatud ühtegi kasti
     if objects == []:
         objects = create_models(vaos, shader_programs['default'],
-                                (cube, (5, 0, 0), texture((0, 0, 255))), name="Tavaline kast"
+                                model(cube, texture((0, 255, 0)), "Tavaline kast", (5, 0, 0), (1, 1, 4)),
+                                model(cube, texture((0, 255, 0)), "Tavaline kast", (5, 2, 0)),
+                                model(cube, texture((0, 255, 0)), "Tavaline kast", (5, -2, 0)),
                                 )
-
     while 1:
         check_events(vaos, vbos, shader_programs)
         # Uuendab ekranni
