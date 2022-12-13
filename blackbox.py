@@ -58,8 +58,6 @@ def render_scene(objects):
         obj[1][0]["camPos"].write(position)
         # renderdab iga objekti jaoks oma tekstuuri/värvi
         obj[1][3].use(location=0)
-    print()
-    intersection_test(objects, 4)
 
 
 def render_shadow(objects):
