@@ -17,7 +17,7 @@ SPEED = 7
 SENSITIVITY = 0.05
 
 # Valguse asukoht
-VALGUS_X, VALGUS_Y, VALGUS_Z = 20, 20, 20
+VALGUS_X, VALGUS_Y, VALGUS_Z = -21, 10, 0
 # Valgus
 position_v = glm.vec3(VALGUS_X, VALGUS_Y, VALGUS_Z)
 color = glm.vec3(1, 1, 1)

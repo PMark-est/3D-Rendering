@@ -107,6 +107,7 @@ def rotate_camera():
     global yaw, pitch, forward, right, up, m_view
     rel_x, rel_y = pg.mouse.get_rel()
     yaw += rel_x * SENSITIVITY
+    yaw = yaw % 360
     pitch -= rel_y * SENSITIVITY
     pitch = max(-89, min(89, pitch))
 
@@ -185,9 +186,21 @@ def intersection_test(objects, dst):
 
         if find_side(start_x, obj_x, size_x):
             if start_z <= obj_z - size_z:
-                print("z+")
+                angle_l = np.rad2deg(np.arctan((obj_x+size_x-start_x)/(obj_z-size_z-start_z)))
+                angle_r = np.rad2deg(np.arctan((start_x-obj_x+size_x)/(obj_z-size_z-start_z)))
+                if 90 - angle_l > yaw > 0:
+                    continue
+                if 180 > yaw > 90 + angle_r:
+                    continue
+                intersecting_objects.append(obj)
             elif start_z >= obj_z + size_z:
-                print("z-")
+                angle_l = np.rad2deg(np.arctan((start_x-obj_x+size_x)/(start_z-obj_z-size_z)))
+                angle_r = np.rad2deg(np.arctan((obj_x+size_x-start_x)/(start_z-obj_z-size_z)))
+                if 270 - angle_l > yaw > 180:
+                    continue
+                if 270 + angle_r < yaw < 360:
+                    continue
+                intersecting_objects.append(obj)
             continue
         elif find_side(start_z, obj_z, size_z):
             if start_x <= obj_x - size_x:
@@ -195,9 +208,9 @@ def intersection_test(objects, dst):
                                      (obj_x-size_x-start_x))
                 angle_r = np.rad2deg(np.arctan(obj_z+size_z-start_z) /
                                      (obj_x-size_x-start_x))
-                if 270 < yaw <= 360 - angle_l:
+                if 270 < yaw < 360 - angle_l:
                     continue
-                elif 90 > yaw >= angle_r:
+                elif 90 > yaw > angle_r:
                     continue
                 intersecting_objects.append(obj)
             elif start_x >= obj_x + size_x:
@@ -205,14 +218,13 @@ def intersection_test(objects, dst):
                                      (start_x-obj_x-size_x))
                 angle_r = np.rad2deg(np.arctan(start_z-obj_z+size_z) /
                                      (start_x-obj_x-size_x))
-                if 90 < yaw <= 180-angle_l:
+                if 90 < yaw < 180-angle_l:
                     continue
-                elif 270 > yaw >= 180+angle_r:
+                elif 270 > yaw > 180+angle_r:
                     continue
                 intersecting_objects.append(obj)
             continue
         else:
-            print("on xz")
             continue
     return intersecting_objects
 

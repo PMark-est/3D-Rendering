@@ -254,7 +254,6 @@ def move_object(obj):
     """Funktsioon objekti asukoha muutmiseks"""
     global window
 
-    x = obj[0][2][3][0]
     size = obj[0][2][0][0], obj[0][2][1][1], obj[0][2][2][2]
 
     pg.event.set_grab(False)
@@ -695,9 +694,12 @@ def main():
     # Kui ei ole lisatud ühtegi kasti
     if objects == []:
         objects = create_models(vaos, shader_programs['default'],
-                                model(cube, texture((0, 255, 0)), "Automaatselt lisatud kast", (5, 0, 0), (1, 1, 4)),
-                                model(cube, texture((0, 255, 0)), "Automaatselt lisatud kast", (5, 2, 0)),
-                                model(cube, texture((0, 255, 0)), "Automaatselt lisatud kast", (5, -2, 0)),
+                                model(cube, texture('textures/p6rand.jfif'), "Automaatselt lisatud kast", (0, -0.2, 0), (20, 0.1, 20)),
+                                model(cube, texture('textures/sein.jpg'), "Automaatselt lisatud kast", (19, 3.9, 0), (1, 4, 20)),
+                                model(cube, texture('textures/sein.jpg'), "Automaatselt lisatud kast", (0, 3.9, -19), (20, 4, 1)),
+                                model(cube, texture('textures/sein.jpg'), "Automaatselt lisatud kast", (-19, 3.9, 0), (1, 4, 20)),
+                                model(cube, texture('textures/sein.jpg'), "Automaatselt lisatud kast", (0, 3.9, 19), (20, 4, 1)),
+                                model(cube, texture('textures/sein.jpg'), "Automaatselt lisatud kast", (10, 1.9, 0), (1, 2, 4)),
                                 )
     while 1:
         check_events(vaos, vbos, shader_programs)
