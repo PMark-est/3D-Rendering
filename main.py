@@ -23,6 +23,7 @@ from PIL import ImageTk
 def check_events(vaos, vbos, shader_programs):
     move_camera()
     rotate_camera()
+    a = intersection_test(objects, 10)
     for event in pg.event.get():
         # Kontrollib sulgemist
         if event.type == pg.QUIT:
@@ -35,6 +36,13 @@ def check_events(vaos, vbos, shader_programs):
                 pg.mouse.get_rel()
                 pg.event.set_grab(True)
                 pg.mouse.set_visible(False)
+            if event.key == pg.K_UP:
+                if a == []:
+                    return
+                x = a[0][2][3][0]
+                m_model = glm.translate((x+5, 0, 5))
+                a[0][2] = m_model
+
 
 
 def check_events_pause(vaos, vbos, shader_programs):
@@ -86,7 +94,7 @@ def cube(vaos, shader_program, pos, texture, size=(1, 1, 1), name="kast"):
     m_model = glm.mat4()
     m_model = glm.translate(m_model, pos)
     m_model = glm.scale(m_model, size)
-    return vaos['cube'], cube_model(shader_program, pos, size, vaos, texture), m_model, name
+    return [vaos['cube'], cube_model(shader_program, pos, size, vaos, texture), m_model, name]
 
 
 def cube_vbo():
