@@ -268,46 +268,38 @@ def create_models_gui(start):
     window = tk.Tk()
     window.title("Muuda stseeni")
     window.resizable(width=False, height=False)
-    window.geometry("300x300")
+    window.geometry("500x500")
 
     # Pildi variandina väga halvasti kirjutatud tekst
     img = Image.open("textures/valitegevus.jpg")
     img = img.resize((230, 70), Image.Resampling.LANCZOS)
     img = ImageTk.PhotoImage(img)
-    panel = tk.Label(window, image=img)
-    panel.pack()
+    label1 = tk.Label(window, image=img)
+    label1.pack()
 
     img2 = Image.open("textures/hetkelobjekteekraanil.jpg")
     img2 = img2.resize((250, 60), Image.Resampling.LANCZOS)
     img2 = ImageTk.PhotoImage(img2)
-    panel2 = tk.Label(window, image=img2)
-    panel2.pack()
+    label2 = tk.Label(window, image=img2)
+    label2.pack()
 
-    # Teksti variandina sama jutt
-    # label = tk.Label(window, text="Vali tegevus",
-    #                 font=10, width=25, height=5)
-    # count = tk.Label(window, text=f"{len(objects)}",
-    #                 width=25, height=2)
-
-    # Halvasti kirjutatud arvud piltidena
-    number = []
-    panel3 = []
+    # Halvasti kirjutatud arvud piltidena 
+    # Järjendi pikkus sõnena, et võtta üksikud numbrid järjest
     for i in range(len(str(len(objects)))):
         a = str(len(objects))[i]
-        number.append(Image.open(
-            f"textures/numbrid/{a}.jpg").resize((20, 30), Image.Resampling.LANCZOS))
-        number[i] = ImageTk.PhotoImage(number[i])
-        panel3.append(tk.Label(window, image=number[i]))
-        panel3[i].photo = number[i]
-       #panel3[i].grid(row=1, column=i)
-        panel3[i].pack()
+        number = Image.open(
+            f"textures/numbrid/{a}.jpg").resize((20, 30), Image.Resampling.LANCZOS)
+        number = ImageTk.PhotoImage(number)
+        count = (tk.Label(window, image=number))
+        count.photo = number
+        count.pack()
 
     # Nupud
     button1 = tk.Button(window, text="Lisa objekte",
                         width=25, command=lambda: add_stuff(start))
     if start == True:
         button2 = tk.Button(
-            window, text="Alusta", width=25, command=lambda: close_gui(1))
+            window, text="Alusta", width=25, command=lambda: close_gui())
     else:
         button2 = tk.Button(
             window, text="Muuda/eemalda objekte", width=25, command=change_stuff)
@@ -316,12 +308,10 @@ def create_models_gui(start):
         button5 = tk.Button(
             window, text="Muuda tausta värvi", width=25, command=change_scene)
 
-    # Teeb kõik elemendid kuvatavaks vist
-   # label.pack()
-    # count.pack()
-
+    # Teeb kõik elemendid kuvatavaks
     button1.pack()
     button2.pack()
+    # Kui programm ei ole esimest korda tööl
     if start == False:
         button4.pack()
         button5.pack()
@@ -330,19 +320,14 @@ def create_models_gui(start):
     window.mainloop()
 
 
-def close_gui(a):
+def close_gui(a=""):
     """Funktsioon tkinteri akende sulgemiseks, et ei peaks iga funktsiooni lõpus seda olema"""
     global window, window2
-    if a == 2:
-        # Sülgeb mõlemad aknad korraga
+    if a == 1:
+        # Sulgeb pealmise akna, et alumine alles jääks
         window2.destroy()
+    else:
         window.destroy()
-    elif a == 1:
-        # Sulgeb ainult ühe akna, sest ainult üks on ees
-        window.destroy()
-    elif a == "x":
-        # Sulgeb pealmise akna
-        window2.destroy()
     pg.mouse.get_rel()
     pg.event.set_grab(True)
     pg.mouse.set_visible(False)
@@ -353,65 +338,85 @@ def add_stuff(start):
     global window2
 
     # Uus aken uue muutuja nimega
-    window2 = tk.Toplevel()
+    window2 = tk.Toplevel(window)
     window2.title("Lisa objekte")
     window2.resizable(width=False, height=False)
-    window2.geometry("300x300")
+    window2.geometry("500x500")
+    window2.columnconfigure(0, weight=1)
+    window2.columnconfigure(1, weight=1)
 
     # Tekst
     label_info = tk.Label(window2, text="Sisesta koordinaadid")
 
     # Sisestuskastid
-    x = tk.StringVar()
     label_x = tk.Label(window2, text="X")
+    x = tk.StringVar()
     x_entry = ttk.Entry(window2, textvariable=x)
     x_entry.focus()
 
-    y = tk.StringVar()
+    label_x2 = tk.Label(window2, text="Suurus mööda x-telge")
+    size_x = tk.StringVar()
+    x2_entry = ttk.Entry(window2, textvariable=size_x)
+
     label_y = tk.Label(window2, text="Y")
+    y = tk.StringVar()
     y_entry = ttk.Entry(window2, textvariable=y)
 
-    z = tk.StringVar()
+    label_y2 = tk.Label(window2, text="Suurus mööda y-telge")
+    size_y = tk.StringVar()
+    y2_entry = ttk.Entry(window2, textvariable=size_y)
+
     label_z = tk.Label(window2, text="Z")
+    z = tk.StringVar()
     z_entry = ttk.Entry(window2, textvariable=z)
 
-    name = tk.StringVar()
+    label_z2 = tk.Label(window2, text="Suurus mööda z-telge")
+    size_z = tk.StringVar()
+    z2_entry = ttk.Entry(window2, textvariable=size_z)
+
     label_name = tk.Label(window2, text="Nimi objektile")
+    name = tk.StringVar()
     name_entry = ttk.Entry(window2, textvariable=name)
 
     # Nupud
     button = tk.Button(
-        window2, text="Edasi värvi valima", command=lambda: create(x, y, z, name, "color", "add", start))
+        window2, text="Edasi värvi valima", command=lambda: create(x, y, z, (size_x, size_y, size_z), name, "color", "add", start))
     button2 = tk.Button(
-        window2, text="Või vali oma pilt", command=lambda: create(x, y, z, name, "image", "add", start))
+        window2, text="Või vali oma pilt", command=lambda: create(x, y, z, (size_x, size_y, size_z), name, "image", "add", start))
 
     label_info2 = tk.Label(
         window2, text="Töökindel .jpg failidega, teiste tüüpidega vastutad ise")
 
-    # Kõik elemendid kuvatavaks vist
-    label_info.pack()
+    # Kõik elemendid kuvatavaks oma ridadel
+    label_info.grid(row=0, columnspan=2)
 
-    label_x.pack()
-    x_entry.pack()
+    label_x.grid(row=1, column=0)
+    x_entry.grid(row=2, column=0)
+    label_x2.grid(row=1, column=1)
+    x2_entry.grid(row=2, column=1)
 
-    label_y.pack()
-    y_entry.pack()
+    label_y.grid(row=3, column=0)
+    y_entry.grid(row=4, column=0)
+    label_y2.grid(row=3, column=1)
+    y2_entry.grid(row=4, column=1)
 
-    label_z.pack()
-    z_entry.pack()
+    label_z.grid(row=5, column=0)
+    z_entry.grid(row=6, column=0)
+    label_z2.grid(row=5, column=1)
+    z2_entry.grid(row=6, column=1)
 
-    label_name.pack()
-    name_entry.pack()
+    label_name.grid(row=7, column=0, columnspan=2)
+    name_entry.grid(row=8, column=0, columnspan=2)
 
-    button.pack()
-    button2.pack()
-    label_info2.pack()
+    button.grid(row=9, columnspan=2)
+    button2.grid(row=10, columnspan=2)
+    label_info2.grid(row=11, columnspan=2)
 
     # Akna põhitsükkel
     window2.mainloop()
 
 
-def create(x, y, z, name, choice, action, count="", start=False):
+def create(x, y, z, size, name, choice, action, start=False):
     """Funktsioon, mis võtab eelnevast funktsioonist x-y-z koordinaadid, küsib värvi ja loob neist objekti"""
     if action == "add":
         # Teeb eelnevalt kasti sisestatud koordinaadid arvudeks
@@ -419,6 +424,13 @@ def create(x, y, z, name, choice, action, count="", start=False):
             x = float(x.get())
             y = float(y.get())
             z = float(z.get())
+            size_x = size[0].get()
+            size_y = size[1].get()
+            size_z = size[2].get()
+            if size_x == "" or size_y == "" or size_z == "":
+                size = (1, 1, 1)
+            else:
+                size = (float(size_x), float(size_y), float(size_z))
             name = str(name.get())
         except:
             raise Exception("Sisestatud koordinaadid ei ole arvud")
@@ -434,40 +446,41 @@ def create(x, y, z, name, choice, action, count="", start=False):
 
     # Lisab need objektide nimekirja
     object = create_models(vaos, shader_programs['default'],
-                           model(cube, texture((color)), name, (x,y,z)))
+                           model(cube, texture((color)), name, (x,y,z), size))
     objects.append(object[0])
 
     # Kui on alles programm käima pandud, siis ei taha, et see automaatselt kõik kinni paneks
     # pärast esimese objekti lisamist
+    close_gui()
     if start == True:
-        close_gui("x")
-        # Uuendab teksti
-        count.config(text=f"Hetkel objekte ekraanil: {len(objects)}")
-    else:
-        close_gui(2)
+        create_models_gui(True)
 
 
 def change_stuff():
     """Aken objektide nimekirjaga, kus saab valida kas muuta värvi või eemaldada"""
-    global objects, window2
-    window2 = tk.Toplevel()
+    global window2
+
+    window2 = tk.Toplevel(window)
     window2.title("Muuda objekte")
     window2.resizable(width=False, height=False)
-    window2.geometry("300x300")
+    window2.geometry("500x500")
 
     valik = []
     coords = []
     # Lisab kõikide olevate objektide koordinaadid järjendisse
     for obj in objects:
+        name = obj[3]
+        obj = obj[2].to_tuple()
+        coord, size = obj[3][0:3], (obj[0][0], obj[1][1], obj[2][2])
         # Nimekiri, mida kasutaja näeb
-        valik.append(f"{obj[3]}: {obj[2].to_tuple()[3][0:3]}")
+        valik.append(f"{name}: {coord}")
         # Koordinaadid lähevad eraldi veel järjendisse, et neid oleks lihtsam otsida
-        coords.append(obj[2].to_tuple()[3][0:3])
+        coords.append([coord, size])
     list_items = tk.Variable(value=valik)
 
     # Kast, kus saab valida ühte rida
     listbox = tk.Listbox(
-        window2, listvariable=list_items, selectmode=tk.SINGLE)
+        window2, listvariable=list_items, selectmode=tk.SINGLE, width=50)
 
     # Nupud
     button1 = tk.Button(window2, text="Muuda värvi",
@@ -486,12 +499,13 @@ def change_stuff():
 
 
 def change(listbox, coords, replace, choice=""):
-    """Funktsioon objekti värvi muutmiseks"""
+    """Funktsioon objekti värvi muutmiseks või eemaldamiseks"""
     global objects
 
     # Leiab nimekirjast valitud rea numbri ja koordinaatide nimekirjast vastavad koordinaadid
     i = listbox.curselection()
-    coord = coords[i[0]]
+    coord = coords[i[0]][0]
+    size = coords[i[0]][1]
 
     # Leiab muudetava objekti koordinaadid ehk eelnevast nimekirjast otsib need
     x, y, z = float(coord[0]), float(coord[1]), float(coord[2])
@@ -503,19 +517,19 @@ def change(listbox, coords, replace, choice=""):
 
     # Kui on valitud nupp "Muuda värvi"
     if replace == True:
-        create(x, y, z, name, choice, "replace")
-
-    close_gui(2)
+        create(x, y, z, size, name, choice, "replace")
+    else:
+        close_gui()
 
 
 def change_light():
     """Aken valguse "lambi" asukoha väärtuste sisestamiseks"""
     global window2
     # Uus aken
-    window2 = tk.Toplevel()
+    window2 = tk.Toplevel(window)
     window2.title("Muuda valgust")
     window2.resizable(width=False, height=False)
-    window2.geometry("300x300")
+    window2.geometry("500x500")
 
     # Teksti kastid
     label_info1 = tk.Label(window2, text="Hetkel valguse asukoht:")
@@ -579,10 +593,11 @@ def move_light(x, y, z):
 
     # Lükkab uued valguse/varju väärtused renderisse
     for obj in objects:
+        obj[1][1]['m_view_light'].write(m_view_light)
         obj[1][0]['light.position_v'].write(position_v)
         obj[1][0]['m_view_light'].write(m_view_light)
 
-    close_gui(2)
+    close_gui()
 
 
 def change_scene():
@@ -591,8 +606,9 @@ def change_scene():
     color = colorchooser.askcolor(title="Vali värv")
 
     # Teeb valitud 0-255 väärtused 0-1 vahemikku
-    RED, GREEN, BLUE = color[0][0]/255, color[0][1]/255, color[0][2]/255
-    close_gui(1)
+    if color[0] != None:
+        RED, GREEN, BLUE = color[0][0]/255, color[0][1]/255, color[0][2]/255
+    close_gui()
 
 
 def main():
@@ -609,9 +625,9 @@ def main():
     # Kui ei ole lisatud ühtegi kasti
     if objects == []:
         objects = create_models(vaos, shader_programs['default'],
-                                model(cube, texture((0, 255, 0)), "Tavaline kast", (5, 0, 0), (1, 1, 4)),
-                                model(cube, texture((0, 255, 0)), "Tavaline kast", (5, 2, 0)),
-                                model(cube, texture((0, 255, 0)), "Tavaline kast", (5, -2, 0)),
+                                model(cube, texture((0, 255, 0)), "Automaatselt lisatud kast", (5, 0, 0), (1, 1, 4)),
+                                model(cube, texture((0, 255, 0)), "Automaatselt lisatud kast", (5, 2, 0)),
+                                model(cube, texture((0, 255, 0)), "Automaatselt lisatud kast", (5, -2, 0)),
                                 )
     while 1:
         check_events(vaos, vbos, shader_programs)
